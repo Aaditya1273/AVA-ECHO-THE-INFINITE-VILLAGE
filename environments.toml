@@ -1,0 +1,11 @@
+[development]
+network = {
+    name = "futurenet",
+    rpc_url = "https://rpc-futurenet.stellar.org:443",
+    network_passphrase = "Test SDF Future Network ; October 2022"
+}
+accounts = ["me"]
+
+[development.contracts.sphira]
+id = "CDBBFOFXMETCQ7PXZRXWBAXFPQMXEDFNJIVPRYCT2HWYG2NVSZMIHEXN"
+client = true
