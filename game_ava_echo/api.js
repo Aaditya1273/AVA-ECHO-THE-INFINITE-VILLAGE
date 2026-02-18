@@ -11,15 +11,15 @@ let currentGameId = null;
  */
 async function startNewGame(difficulty) {
   try {
-    console.log("Difficulty level - ",difficulty);
+    console.log("Difficulty level - ", difficulty);
     const response = await fetch(`${API_BASE_URL}/game/new`, {
       method: 'POST',
       headers: {
-      'Content-Type': 'application/json',
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-      difficulty: difficulty,
-      num_inaccessible_locations: 5,
+        difficulty: difficulty,
+        num_inaccessible_locations: 5,
       }),
     });
 
@@ -29,9 +29,9 @@ async function startNewGame(difficulty) {
 
     const data = await response.json();
     currentGameId = data.game_id; // Store the game ID
-    console.log(`New game started with ID: ${currentGameId}`);
+    console.log(`Ava-Echo session started with ID: ${currentGameId}`);
     console.log(data);
-    
+
     return data;
 
   } catch (error) {
@@ -63,7 +63,7 @@ async function getConversation(villagerId, playerMessage) {
       }),
     });
     console.log(response);
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -113,14 +113,14 @@ async function chooseLocation(location) {
 /**
  * Pings the server to wake it up if it's on a free hosting service.
  */
- async function pingServer() {
+async function pingServer() {
   try {
     console.log("Pinging server to wake it up...");
     const response = await fetch(`${API_BASE_URL}/ping/`);
     if (!response.ok) {
       throw new Error(`Ping failed with status: ${response.status}`);
     }
-    const data =  await response.json();
+    const data = await response.json();
     console.log("Server responded to ping:", data.message);
   } catch (error) {
     // This is not a critical error, so we just warn about it.

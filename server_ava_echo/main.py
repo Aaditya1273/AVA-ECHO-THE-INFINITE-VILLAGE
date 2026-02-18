@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-app = FastAPI(title="Echoes of the Village - Game Backend")
+app = FastAPI(title="Ava-Echo: The Infinite Mystery Engine - Backend")
 
 # CORS configuration
 app.add_middleware(
@@ -189,7 +189,7 @@ class CompleteGameResponse(BaseModel):
 async def health_check():
     return {
         "status": "healthy",
-        "service": "Echoes of the Village Backend",
+        "service": "Ava-Echo Backend",
         "timestamp": datetime.now().isoformat()
     }
 
@@ -224,7 +224,7 @@ async def complete_game(request: CompleteGameRequest):
         
         message = "Game completed! "
         if result["won"] and result["rewardAmount"] > 0:
-            message += f"Reward: {result['rewardAmount'] / 1e9:.2f} OCT - Create proof on-chain to claim."
+            message += f"Reward: {result['rewardAmount'] / 1e9:.2f} ECHO - Create proof on-chain to claim."
         
         return CompleteGameResponse(
             success=True,

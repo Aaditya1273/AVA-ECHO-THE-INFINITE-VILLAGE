@@ -62,3 +62,9 @@ VILLAGER_ROSTER = [
 ]
 
 FAMILIARITY_LEVELS = {0: "Unknown", 1: "Stranger", 2: "Acquaintance", 3: "Familiar Face", 4: "Ally", 5: "Confidant"}
+
+# Avalanche L1 (Subnet) Configuration
+AVALANCHE_RPC_URL = "https://subnets.avax.network/myechochain/testnet/rpc" # Placeholder
+AVALANCHE_CHAIN_ID = 9000 # Example for Avalanche 9000
+TELEPORTER_MESSENGER_ADDRESS = "0x253b2783c004018253b2783c004018253b2783c0" # Placeholder
+ECHO_TOKEN_SYMBOL = "ECHO"
