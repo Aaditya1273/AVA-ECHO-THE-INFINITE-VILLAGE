@@ -2,7 +2,7 @@ import Phaser from "phaser";
 import { SuiClient } from '@mysten/sui/client';
 import { Transaction } from '@mysten/sui/transactions';
 import { pingServer } from "../api";
-import { PACKAGE_ID , MODULE_NAME , SCORES_OBJECT_ID } from "../oneConfig";
+import { PACKAGE_ID, MODULE_NAME, SCORES_RECORD_ID } from "../avaConfig";
 export class WalletScene extends Phaser.Scene {
   constructor() {
     super({ key: "WalletScene" });
@@ -23,8 +23,8 @@ export class WalletScene extends Phaser.Scene {
   }
 
   create() {
-    const ONECHAIN_TESTNET_URL = 'https://rpc-testnet.onelabs.cc:443';
-    this.suiClient = new SuiClient({ url: ONECHAIN_TESTNET_URL });
+    const AVALANCHE_L1_RPC = 'https://subnets.avax.network/myechochain/testnet/rpc'; // Placeholder
+    this.suiClient = new SuiClient({ url: AVALANCHE_L1_RPC });
 
     const framePadding = 20;
     const frameWidth = this.cameras.main.width - framePadding * 2;
@@ -46,7 +46,7 @@ export class WalletScene extends Phaser.Scene {
     const bgVideo = this.add.video(centerX, centerY, "bg_video");
     bgVideo.play(true);
     const zoomOutFactor = 0.45;
-    
+
     const scaleX = this.scale.width / (bgVideo.width || this.scale.width);
     const scaleY = this.scale.height / (bgVideo.height || this.scale.height);
     const scale = Math.min(scaleX, scaleY) * zoomOutFactor;
@@ -225,13 +225,13 @@ export class WalletScene extends Phaser.Scene {
   }
 
   async connectWallet() {
-     pingServer();
+    pingServer();
     if (!this.scale.isFullscreen) {
       this.scale.startFullscreen();
     }
 
     function getWallet() {
-      if (window.onechainWallet) return window.onechainWallet;
+      if (window.avaEchoWallet) return window.avaEchoWallet;
       if (window.sui) return window.sui;
       if (window.one) return window.one;
       return null;
@@ -306,7 +306,7 @@ export class WalletScene extends Phaser.Scene {
     try {
 
       const isRegistered = await this.checkIfUserRegistered();
-      
+
       if (isRegistered) {
         console.log("User already registered, proceeding to game...");
         this.proceedToGame();
@@ -316,11 +316,11 @@ export class WalletScene extends Phaser.Scene {
       console.log("User not registered, registering and setting initial score to 10,000...");
 
       const tx = new Transaction();
-      
+
       tx.moveCall({
         target: `${PACKAGE_ID}::${MODULE_NAME}::register_user`,
         arguments: [
-          tx.object(SCORES_OBJECT_ID),
+          tx.object(SCORES_RECORD_ID),
           tx.pure.address(this.userAddress)
         ],
       });
@@ -328,7 +328,7 @@ export class WalletScene extends Phaser.Scene {
       tx.moveCall({
         target: `${PACKAGE_ID}::${MODULE_NAME}::update_score`,
         arguments: [
-          tx.object(SCORES_OBJECT_ID),
+          tx.object(SCORES_RECORD_ID),
           tx.pure.address(this.userAddress),
           tx.pure.u64(10000)
         ],
@@ -339,7 +339,7 @@ export class WalletScene extends Phaser.Scene {
       });
 
       console.log("User registered and score set to 10,000 successfully!", result);
-      
+
       this.proceedToGame();
 
     } catch (error) {
@@ -354,7 +354,7 @@ export class WalletScene extends Phaser.Scene {
       const tx = new Transaction();
       tx.moveCall({
         target: `${PACKAGE_ID}::${MODULE_NAME}::get_leaderboard`,
-        arguments: [tx.object(SCORES_OBJECT_ID)],
+        arguments: [tx.object(SCORES_RECORD_ID)],
       });
 
       const result = await this.suiClient.devInspectTransactionBlock({
@@ -369,9 +369,9 @@ export class WalletScene extends Phaser.Scene {
 
       const [addressBytes] = result.results[0].returnValues[0];
       const addresses = this.parseAddressVector(new Uint8Array(addressBytes));
-      
+
       const isRegistered = addresses.some(addr => addr.toLowerCase() === this.userAddress.toLowerCase());
-      
+
       console.log(`User registration check: ${isRegistered ? 'User is registered.' : 'User not found, proceeding to register.'}`);
       return isRegistered;
 
@@ -387,17 +387,17 @@ export class WalletScene extends Phaser.Scene {
     let offset = 1;
     const addressSize = 32;
     for (let i = 0; i < len; i++) {
-        const addressBytes = bytes.slice(offset, offset + addressSize);
-        addresses.push('0x' + Array.from(addressBytes, byte => byte.toString(16).padStart(2, '0')).join(''));
-        offset += addressSize;
+      const addressBytes = bytes.slice(offset, offset + addressSize);
+      addresses.push('0x' + Array.from(addressBytes, byte => byte.toString(16).padStart(2, '0')).join(''));
+      offset += addressSize;
     }
     return addresses;
   }
 
   proceedToGame() {
-    this.scene.start('AvatarScene', { 
+    this.scene.start('AvatarScene', {
       account: this.userAddress,
-      suiClient: this.suiClient 
+      suiClient: this.suiClient
     });
   }
 }

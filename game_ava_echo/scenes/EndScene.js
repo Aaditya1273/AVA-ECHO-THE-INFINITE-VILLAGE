@@ -1,7 +1,7 @@
 // undo 01
 import Phaser from 'phaser';
 import { Transaction } from "@mysten/sui/transactions";
-import { PACKAGE_ID, MODULE_NAME, SCORES_OBJECT_ID, REWARD_POOL_OBJECT_ID, CLOCK_OBJECT_ID } from '../oneConfig';
+import { PACKAGE_ID, MODULE_NAME, SCORES_RECORD_ID, REWARD_POOL_OBJECT_ID, CLOCK_OBJECT_ID } from '../avaConfig';
 
 export class EndScene extends Phaser.Scene {
     constructor() {
@@ -78,8 +78,8 @@ export class EndScene extends Phaser.Scene {
             .setOrigin(0.5)
             .setInteractive({ useHandCursor: true })
             .on('pointerdown', () => {
-            // perform a page reload (equivalent to Ctrl+R)
-            window.location.reload();
+                // perform a page reload (equivalent to Ctrl+R)
+                window.location.reload();
             })
             .on('pointerover', () => mainMenuButton.setStyle({ fill: '#4aff9f' }))
             .on('pointerout', () => mainMenuButton.setStyle({ fill: '#2ecc71' }));
@@ -99,7 +99,7 @@ export class EndScene extends Phaser.Scene {
 
     async processGameCompletion() {
         const { account } = this.endGameData;
-        const walletProvider = window.onechainWallet;
+        const walletProvider = window.avaEchoWallet;
 
         if (!account || !walletProvider) {
             this.submissionStatusText.setText('Wallet not connected.');
@@ -118,7 +118,7 @@ export class EndScene extends Phaser.Scene {
             if (this.gameWon) {
                 this.submissionStatusText.setText('Step 2/2: Creating reward proof...');
                 const proofCreated = await this.createGameCompletionProof();
-                
+
                 if (proofCreated) {
                     this.submissionStatusText.setText('✓ Proof created! Click "Claim Reward" below.');
                     this.showClaimButton();
@@ -138,7 +138,7 @@ export class EndScene extends Phaser.Scene {
 
     async submitScore(finalScore) {
         const { account } = this.endGameData;
-        const walletProvider = window.onechainWallet;
+        const walletProvider = window.avaEchoWallet;
 
         const tx = new Transaction();
         tx.moveCall({
@@ -156,12 +156,12 @@ export class EndScene extends Phaser.Scene {
     }
 
     async createGameCompletionProof() {
-        const walletProvider = window.onechainWallet;
+        const walletProvider = window.avaEchoWallet;
         const { account } = this.endGameData;
 
         try {
             const sessionIdBytes = Array.from(new TextEncoder().encode(this.gameSessionId));
-            
+
             console.log("Creating proof with params:", {
                 sessionId: this.gameSessionId,
                 score: this.gameScore,
@@ -204,15 +204,15 @@ export class EndScene extends Phaser.Scene {
             if (!this.proofObjectId && result.digest && this.suiClient) {
                 console.log("Fetching transaction details for digest:", result.digest);
                 await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for indexing
-                
+
                 try {
                     const txDetails = await this.suiClient.getTransactionBlock({
                         digest: result.digest,
                         options: { showObjectChanges: true, showEffects: true }
                     });
-                    
+
                     console.log("Transaction details:", JSON.stringify(txDetails, null, 2));
-                    
+
                     if (txDetails.objectChanges) {
                         for (const change of txDetails.objectChanges) {
                             if (change.type === 'created' && change.objectType?.includes('GameCompletionProof')) {
@@ -243,7 +243,7 @@ export class EndScene extends Phaser.Scene {
             if (!this.proofObjectId && this.suiClient && account) {
                 console.log("Searching for proof in owned objects...");
                 await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for indexing
-                
+
                 try {
                     const proofType = `${PACKAGE_ID}::${MODULE_NAME}::GameCompletionProof`;
                     const ownedObjects = await this.suiClient.getOwnedObjects({
@@ -251,9 +251,9 @@ export class EndScene extends Phaser.Scene {
                         filter: { StructType: proofType },
                         options: { showContent: true }
                     });
-                    
+
                     console.log("Owned proof objects:", ownedObjects);
-                    
+
                     if (ownedObjects.data && ownedObjects.data.length > 0) {
                         // Get the most recent one (should be the one we just created)
                         const latestProof = ownedObjects.data[ownedObjects.data.length - 1];
@@ -346,13 +346,13 @@ export class EndScene extends Phaser.Scene {
             console.log("Reward claimed:", result);
 
             // Check for success - handle different response formats
-            const isSuccess = result.effects?.status?.status === 'success' || 
-                              result.effects?.status === 'success' ||
-                              (result.digest && !result.effects?.status?.error);
+            const isSuccess = result.effects?.status?.status === 'success' ||
+                result.effects?.status === 'success' ||
+                (result.digest && !result.effects?.status?.error);
 
             if (isSuccess) {
                 const rewardOCT = (this.rewardAmount / 1e9).toFixed(2);
-                this.submissionStatusText.setText(`🎉 Claimed ${rewardOCT} OCT! Check your wallet.`);
+                this.submissionStatusText.setText(`🎉 Claimed ${rewardOCT} ECHO! Check your wallet.`);
                 this.submissionStatusText.setColor('#2ecc71');
             } else {
                 const errorMsg = result.effects?.status?.error || 'Unknown error';

@@ -2,14 +2,16 @@
 # The core GameEngine that manages the entire game lifecycle.
 
 import json
+import hashlib
 import traceback
 from .state_manager import GameState
 from .llm_calls import GeminiAPI
 from config import VILLAGER_ROSTER, FAMILIARITY_LEVELS
 
 class GameEngine:
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str, blockchain_service=None):
         self.llm_api = GeminiAPI(api_key)
+        self.blockchain = blockchain_service
 
     def start_new_game(self, game_id: str, num_inaccessible_locations: int, difficulty: str) -> GameState:
         game_state = GameState(game_id, difficulty)
@@ -29,6 +31,15 @@ class GameEngine:
         game_state.story_theme = story_idea.get("story_theme")
         game_state.inaccessible_locations = story_idea.get("inaccessible_locations", [])
         game_state.correct_location = story_idea.get("correct_location")
+
+        # --- ADVANCED: On-Chain Hashing of Ground Truth ---
+        ground_truth_string = f"{game_state.story_theme}|{game_state.correct_location}"
+        mystery_hash = hashlib.sha256(ground_truth_string.encode()).hexdigest()
+        game_state.player_state["on_chain_mystery_hash"] = mystery_hash
+        
+        print(f"--- PROOF OF INNOVATION: Mystery Hash Created: {mystery_hash} ---")
+        # In a real flow, we would trigger self.blockchain.commit_mystery_hash(game_id, mystery_hash)
+        # but for demo we log it.
         
         game_state.player_state["knowledge_summary"] = "You've just woken up in a cozy cottage. A kind old man named Arthur tells you he found you unconscious by a car wreck on the edge of the woods. He says he searched the area but saw no sign of your friends. As he speaks, you remember a faint, desperate call in your mind: 'Help us... find us...' You've just thanked him and stepped outside into the village square to begin your search."
         
@@ -89,7 +100,7 @@ class GameEngine:
 
         return "HAS_LOCKED_CLUES", sorted_nodes[0]
 
-    def process_interaction_turn(self, game_state: GameState, npc_name: str, player_input: str, frustration: dict):
+    def process_interaction_turn(self, game_state: GameState, npc_name: str, player_input: str, frustration: dict, player_inventory: list = None):
         clue_status, context_node = self.get_villager_clue_status(game_state, npc_name)
 
         villager_profile = next((v for v in game_state.villagers if v["name"] == npc_name), None)
@@ -106,6 +117,7 @@ class GameEngine:
             "player_knowledge_summary": game_state.player_state["knowledge_summary"],
             "familiarity_level": familiarity,
             "familiarity_description": FAMILIARITY_LEVELS.get(familiarity, "Unknown"),
+            "player_inventory": player_inventory or [] # Pass inventory for trust weighting
         })
         
         dialogue_data = json.loads(dialogue_turn)

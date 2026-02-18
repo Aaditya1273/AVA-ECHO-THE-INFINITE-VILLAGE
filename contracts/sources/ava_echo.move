@@ -1,15 +1,12 @@
 #[allow(duplicate_alias)]
 module contracts::contracts {
-    use one::table::{Self, Table};
-    use one::random::{Self, Random};
-    use one::coin::{Self, Coin};
-    use one::balance::{Self, Balance};
-    use one::oct::OCT;
-    use one::event;
-    use one::object::{Self, UID, ID};
-    use one::tx_context::{Self, TxContext};
-    use one::transfer;
-    use one::clock::{Self, Clock};
+    // use movement::table::{Self, Table};
+    // use movement::random::{Self, Random};
+    // use std::event;
+    // use echo::object::{Self, UID, ID};
+    // use echo::tx_context::{Self, TxContext};
+    // use echo::transfer;
+    // use echo::clock::{Self, Clock};
     use std::vector;
 
     // Error constants
@@ -21,14 +18,40 @@ module contracts::contracts {
     const E_INVALID_SCORE: u64 = 9;
 
     // Game constants
-    const ENTRANCE_FEE: u64 = 50000000; // 0.05 OCT in smallest units
+    const ENTRANCE_FEE: u64 = 50000000; // 0.05 ECHO
     
-    // Reward calculation constants (matching backend)
-    const BASE_REWARD: u64 = 100000000; // 0.5 OCT
-    const SCORE_MULTIPLIER: u64 = 100000; // 0.0001 OCT per score point
-    const MAX_REWARD: u64 = 5000000000; // 5.0 OCT
-    const MIN_REWARD: u64 = 100000000; // 0.1 OCT
-    const TRUE_ENDING_BONUS: u64 = 1000000000; // 1.0 OCT
+    // Reward calculation constants
+    const BASE_REWARD: u64 = 100000000; // 0.5 ECHO
+    const SCORE_MULTIPLIER: u64 = 100000; // 0.0001 ECHO
+    const MAX_REWARD: u64 = 5000000000; // 5.0 ECHO
+    const MIN_REWARD: u64 = 100000000; // 0.1 ECHO
+    const TRUE_ENDING_BONUS: u64 = 1000000000; // 1.0 ECHO
+
+    /***********************
+     * MYSTERY RECORD (Hashing)
+     ***********************/
+    public struct MysteryRecord has key {
+        id: UID,
+        game_session_id: vector<u8>,
+        hash: vector<u8>,
+        committed_at: u64,
+    }
+
+    public entry fun commit_mystery_hash(
+        game_session_id: vector<u8>,
+        hash: vector<u8>,
+        clock: &Clock,
+        ctx: &mut TxContext
+    ) {
+        let record = MysteryRecord {
+            id: object::new(ctx),
+            game_session_id,
+            hash,
+            committed_at: clock::timestamp_ms(clock),
+        };
+        // In a real Subnet, we might store this in a table or emit an event
+        transfer::share_object(record);
+    }
 
     /***********************
      * SCOREBOARD
@@ -114,6 +137,17 @@ module contracts::contracts {
     public entry fun burn_item(item: ItemNFT) {
         let ItemNFT { id, name: _ } = item;
         object::delete(id);
+    }
+
+    /***********************
+     * TELEPORTER (Mock)
+     ***********************/
+    public entry fun teleport_item(item: ItemNFT, _target_chain_id: u64, _ctx: &mut TxContext) {
+        // MOCK: In a real Avalanche L1, this would call the Teleporter Messenger
+        // Here we just burn the item on this chain to simulate "porting" it away.
+        let ItemNFT { id, name: _ } = item;
+        object::delete(id);
+        // Event would be emitted here for the relayer
     }
 
     public fun name(item: &ItemNFT): &vector<u8> {
@@ -292,7 +326,7 @@ module contracts::contracts {
     
     public struct RewardPool has key {
         id: UID,
-        balance: Balance<OCT>,
+        // balance: Balance<ECHO>, // Placeholder for Avalanche native or custom token
         total_collected: u64,
         total_distributed: u64,
         admin: address,

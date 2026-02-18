@@ -3,7 +3,7 @@ import { AvatarUtils } from "../utils/avatarUtils.js";
 import { startNewGame, getConversation } from "../api";
 import { Transaction } from '@mysten/sui/transactions';
 
-import { PACKAGE_ID, MODULE_NAME, itemNftStructType } from "../oneConfig.js";
+import { PACKAGE_ID, MODULE_NAME, itemStructType } from "../avaConfig.js";
 export class HomeScene extends Phaser.Scene {
   constructor() {
     super({ key: "HomeScene" });
@@ -127,7 +127,7 @@ export class HomeScene extends Phaser.Scene {
     loadingPanel.strokeRoundedRect(panelX + 2, panelY + 2, panelWidth - 4, panelHeight - 4, 23);
 
     // Game title
-    const gameTitle = this.add.text(width / 2, panelY + 60, 'Echoes of the Village', {
+    const gameTitle = this.add.text(width / 2, panelY + 60, 'Ava-Echo', {
       fontFamily: 'Georgia, serif',
       fontSize: '36px',
       color: '#d4af37',

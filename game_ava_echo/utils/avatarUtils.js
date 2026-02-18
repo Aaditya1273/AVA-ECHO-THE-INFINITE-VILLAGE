@@ -1,5 +1,5 @@
 import { Transaction } from '@mysten/sui/transactions';
-import { PACKAGE_ID, MODULE_NAME } from "../oneConfig.js";
+import { PACKAGE_ID, MODULE_NAME } from "../avaConfig.js";
 
 export class AvatarUtils {
   static async getUserAvatar(suiClient, account) {

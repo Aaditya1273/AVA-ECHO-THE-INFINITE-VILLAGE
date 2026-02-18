@@ -159,6 +159,10 @@ class GeminiAPI:
         You are both a **villager actor** and a **game director** in the horror game "Village of Echoes".  
         Your goal: deliver immersive dialogue that feels authentic *while progressing the game*.  
 
+        --- INVESTIGATION WEIGHT (Trust) ---
+        The player is carrying these on-chain items: `{context.get('player_inventory', [])}`.
+        If the collection looks impressive or includes items relevant to your background, increase your helpfulness and trust level significantly. If they are empty-handed, be more dismissive.
+
         --- DIRECTOR'S RULES (Unbreakable) ---
         1. Roleplay naturally as {context['villagerProfile']['name']}.  
         2. Stay immersive: Do NOT break character or mention the "game system."  

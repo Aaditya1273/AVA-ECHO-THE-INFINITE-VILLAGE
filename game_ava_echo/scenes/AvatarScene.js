@@ -2,7 +2,7 @@ import Phaser from "phaser";
 import { Transaction } from '@mysten/sui/transactions';
 import { AvatarUtils } from "../utils/avatarUtils.js";
 
-import { PACKAGE_ID, MODULE_NAME, AVATAR_REGISTRY_OBJECT_ID, RANDOM_OBJECT_ID } from "../oneConfig.js";
+import { PACKAGE_ID, MODULE_NAME, AVATAR_REGISTRY_OBJECT_ID, RANDOM_OBJECT_ID } from "../avaConfig.js";
 
 export class AvatarScene extends Phaser.Scene {
   constructor() {
@@ -36,7 +36,7 @@ export class AvatarScene extends Phaser.Scene {
     const bgVideo = this.add.video(width / 2, height / 2, 'bg04_animated');
     bgVideo.play(true);
     const zoomOutFactor = 0.45;
-    
+
     const scaleX = this.scale.width / (bgVideo.width || this.scale.width);
     const scaleY = this.scale.height / (bgVideo.height || this.scale.height);
     const scale = Math.min(scaleX, scaleY) * zoomOutFactor;
@@ -50,8 +50,8 @@ export class AvatarScene extends Phaser.Scene {
     if (hasAvatar) {
       console.log("User already has an avatar, proceeding to game...");
       const userAvatar = await AvatarUtils.getUserAvatar(this.suiClient, this.account);
-      this.scene.start("MenuScene", { 
-        suiClient: this.suiClient, 
+      this.scene.start("MenuScene", {
+        suiClient: this.suiClient,
         account: this.account,
         userAvatar: userAvatar
       });
@@ -169,11 +169,11 @@ export class AvatarScene extends Phaser.Scene {
     // Deselect previous box
     if (this.previousSelectedBox) {
       this.previousSelectedBox.lineStyle(3, 0x666699, 1).strokeRoundedRect(
-          this.previousSelectedBox.x, this.previousSelectedBox.y, 
-          this.previousSelectedBox.width, this.previousSelectedBox.height, 15
+        this.previousSelectedBox.x, this.previousSelectedBox.y,
+        this.previousSelectedBox.width, this.previousSelectedBox.height, 15
       );
     }
-    
+
     this.selectedAvatarId = avatarId;
     console.log(`Selected Avatar #${avatarId}`);
 
@@ -207,7 +207,7 @@ export class AvatarScene extends Phaser.Scene {
         target: `${PACKAGE_ID}::${MODULE_NAME}::ensure_avatar`,
         arguments: [tx.object(AVATAR_REGISTRY_OBJECT_ID), tx.object(RANDOM_OBJECT_ID)],
       });
-      const result = await window.onechainWallet.signAndExecuteTransaction({ transaction: tx });
+      const result = await window.avaEchoWallet.signAndExecuteTransaction({ transaction: tx });
       console.log("Avatar minting transaction:", result);
 
       loadingText.setText("Avatar minted successfully!");

@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import { AvatarUtils } from "../utils/avatarUtils.js";
 import { Transaction } from "@mysten/sui/transactions";
-import { PACKAGE_ID, MODULE_NAME, CHEST_REGISTRY_ID , REWARD_POOL_OBJECT_ID,CLOCK_OBJECT_ID} from "../oneConfig.js";
+import { PACKAGE_ID, MODULE_NAME, CHEST_REGISTRY_ID, REWARD_POOL_OBJECT_ID, CLOCK_OBJECT_ID } from "../avaConfig.js";
 
 export class MenuScene extends Phaser.Scene {
   constructor() {
@@ -31,7 +31,7 @@ export class MenuScene extends Phaser.Scene {
       this.load.image(`avatar_${i}`, `/assets/images/characters/mc_${i}.png`);
     }
     this.load.video('bg04_animated', '/assets/cut-scene/bg04_animated.mp4', 'loadeddata', false, true);
-    
+
     // Load chest assets (create fallback if they don't exist)
     this.load.image('chest_closed', '/assets/images/ui/chest_closed.png');
     this.load.image('chest_open', '/assets/images/ui/chest_open.png');
@@ -64,7 +64,7 @@ export class MenuScene extends Phaser.Scene {
     const bgVideo = this.add.video(width / 2, height / 2, 'bg04_animated');
     bgVideo.play(true);
     const zoomOutFactor = 0.45;
-    
+
     const scaleX = this.scale.width / (bgVideo.width || this.scale.width);
     const scaleY = this.scale.height / (bgVideo.height || this.scale.height);
     const scale = Math.min(scaleX, scaleY) * zoomOutFactor;
@@ -98,7 +98,7 @@ export class MenuScene extends Phaser.Scene {
     panel.lineStyle(4, 0xd4af37, 1);
     panel.strokeRoundedRect(panelX, panelY, panelWidth, panelHeight, 25);
 
-    this.add.text(width / 2, panelY + 60, "Echoes of the Village", {
+    this.add.text(width / 2, panelY + 60, "Ava-Echo", {
       fontFamily: "Georgia, serif",
       fontSize: "48px",
       color: "#ffffffff",
@@ -144,7 +144,7 @@ export class MenuScene extends Phaser.Scene {
 
     try {
       const tx = new Transaction();
-      
+
       tx.moveCall({
         target: `${PACKAGE_ID}::${MODULE_NAME}::get_chest_cooldown_remaining`,
         arguments: [
@@ -180,10 +180,10 @@ export class MenuScene extends Phaser.Scene {
   displayChest(x, y) {
     const chestY = y - 100;
     const canOpen = this.chestCooldownRemaining <= 0;
-    
+
     // Chest container
     const chestContainer = this.add.container(x, chestY);
-    
+
     // Create chest image (fallback to graphics if image doesn't exist)
     let chestImage;
     try {
@@ -198,14 +198,14 @@ export class MenuScene extends Phaser.Scene {
       chestImage.lineStyle(3, 0x000000, 1);
       chestImage.strokeRoundedRect(-50, -25, 100, 50, 10);
     }
-    
+
     // Add glow effect if can open
     if (canOpen) {
       const glow = this.add.graphics()
         .fillStyle(0xffd700, 0.3)
         .fillCircle(0, 0, 60);
       chestContainer.add([glow, chestImage]);
-      
+
       this.tweens.add({
         targets: glow,
         alpha: { from: 0.3, to: 0.7 },
@@ -225,7 +225,7 @@ export class MenuScene extends Phaser.Scene {
       align: "center",
     }).setOrigin(0.5);
 
-    this.chestStatusText = this.add.text(x, y + 10, 
+    this.chestStatusText = this.add.text(x, y + 10,
       canOpen ? "Ready to open!" : this.formatCooldownTime(this.chestCooldownRemaining), {
       fontFamily: "Arial",
       fontSize: "16px",
@@ -265,9 +265,9 @@ export class MenuScene extends Phaser.Scene {
 
     try {
       console.log("Creating transaction for chest opening...");
-      
+
       const tx = new Transaction();
-      
+
       tx.moveCall({
         target: `${PACKAGE_ID}::${MODULE_NAME}::open_chest`,
         arguments: [
@@ -279,11 +279,11 @@ export class MenuScene extends Phaser.Scene {
 
       console.log("Transaction created, signing...");
 
-      if (!window.onechainWallet) {
-        throw new Error("OneChain wallet not found");
+      if (!window.avaEchoWallet) {
+        throw new Error("Ava-Echo wallet not found");
       }
 
-      const result = await window.onechainWallet.signAndExecuteTransaction({ 
+      const result = await window.avaEchoWallet.signAndExecuteTransaction({
         transaction: tx,
         options: {
           showEffects: true,
@@ -312,43 +312,43 @@ export class MenuScene extends Phaser.Scene {
       // Update cooldown (24 hours)
       this.chestCooldownRemaining = 24 * 60 * 60 * 1000;
       this.chestButton.setAlpha(0.5);
-      
+
       // **FIX: Properly access the button text element**
       const buttonText = this.chestButton.list?.[2];
       if (buttonText && buttonText.setText) {
         buttonText.setText("On Cooldown");
       }
-      
+
       this.startChestCountdown();
-      
+
       // Show celebration animation
       this.showChestOpenAnimation();
-      
+
       // **NEW: Update HomeScene inventory if it exists**
       const homeScene = this.scene.get('HomeScene');
       if (homeScene && homeScene.playerInventory) {
         homeScene.playerInventory.add(itemName);
         console.log(`Added ${itemName} to HomeScene inventory`);
       }
-      
+
       // **NEW: Store the item globally so it can be picked up when HomeScene starts**
       const gameRegistry = this.registry;
       const currentItems = gameRegistry.get('pendingInventoryItems') || [];
       currentItems.push(itemName);
       gameRegistry.set('pendingInventoryItems', currentItems);
-      
+
       // **NEW: If we got a placeholder item name, wait a bit for the real name**
       if (itemName === "NEW_ITEM" || itemName === "MYSTERY_ITEM") {
         console.log("Got placeholder item name, waiting for real name...");
         // fetchCreatedItemName will update UI when available
       }
-      
+
     } catch (error) {
       console.error("Failed to open chest:", error);
       this.hideSpinner();
       this.chestStatusText.setText("Failed to open chest");
       this.chestButton.setAlpha(1);
-      
+
       setTimeout(() => {
         this.chestStatusText.setText("Ready to open!");
       }, 3000);
@@ -359,7 +359,7 @@ export class MenuScene extends Phaser.Scene {
   extractItemNameFromTransaction(result) {
     try {
       console.log("Full transaction result:", JSON.stringify(result, null, 2));
-      
+
       // First check objectChanges (if available)
       if (result.objectChanges && result.objectChanges.length > 0) {
         for (const change of result.objectChanges) {
@@ -367,7 +367,7 @@ export class MenuScene extends Phaser.Scene {
           if (change.type === 'created' && change.objectType && change.objectType.includes('ItemNFT')) {
             const objectId = change.objectId;
             console.log("Found created ItemNFT with ID:", objectId);
-            
+
             this.lastCreatedItemId = objectId;
             this.fetchCreatedItemName(objectId);
             return "NEW_ITEM";
@@ -378,7 +378,7 @@ export class MenuScene extends Phaser.Scene {
       // If objectChanges is empty, parse the effects field
       if (result.effects) {
         console.log("Parsing effects field...");
-        
+
         // Try to parse the effects as base64 or hex
         let effectsData;
         if (typeof result.effects === 'string') {
@@ -392,7 +392,7 @@ export class MenuScene extends Phaser.Scene {
             effectsData = result.effects;
           }
         }
-        
+
         // Also check if effects has created objects in different format
         if (result.effects.created) {
           for (const created of result.effects.created) {
@@ -400,7 +400,7 @@ export class MenuScene extends Phaser.Scene {
             if (created.objectType && created.objectType.includes('ItemNFT')) {
               const objectId = created.reference?.objectId || created.objectId;
               console.log("Found ItemNFT creation from effects:", objectId);
-              
+
               this.lastCreatedItemId = objectId;
               this.fetchCreatedItemName(objectId);
               return "NEW_ITEM";
@@ -449,10 +449,10 @@ export class MenuScene extends Phaser.Scene {
   async fetchTransactionDetails(digest) {
     try {
       console.log("Fetching transaction details for digest:", digest);
-      
+
       // Wait a bit for the transaction to be processed
       await new Promise(resolve => setTimeout(resolve, 3000));
-      
+
       const txDetails = await this.suiClient.getTransactionBlock({
         digest: digest,
         options: {
@@ -463,9 +463,9 @@ export class MenuScene extends Phaser.Scene {
           showRawInput: false,
         }
       });
-      
+
       console.log("Transaction details:", txDetails);
-      
+
       // Check object changes in the detailed response
       if (txDetails.objectChanges) {
         for (const change of txDetails.objectChanges) {
@@ -473,14 +473,14 @@ export class MenuScene extends Phaser.Scene {
           if (change.type === 'created' && change.objectType && change.objectType.includes('ItemNFT')) {
             const objectId = change.objectId;
             console.log("Found ItemNFT in detailed transaction:", objectId);
-            
+
             this.lastCreatedItemId = objectId;
             this.fetchCreatedItemName(objectId);
             return;
           }
         }
       }
-      
+
       // Check effects in the detailed response
       if (txDetails.effects && txDetails.effects.created) {
         for (const created of txDetails.effects.created) {
@@ -488,14 +488,14 @@ export class MenuScene extends Phaser.Scene {
           if (created.objectType && created.objectType.includes('ItemNFT')) {
             const objectId = created.reference.objectId;
             console.log("Found ItemNFT in detailed effects:", objectId);
-            
+
             this.lastCreatedItemId = objectId;
             this.fetchCreatedItemName(objectId);
             return;
           }
         }
       }
-      
+
       console.log("Could not find ItemNFT in detailed transaction");
     } catch (error) {
       console.error("Error fetching transaction details:", error);
@@ -506,26 +506,26 @@ export class MenuScene extends Phaser.Scene {
   async fetchCreatedItemName(objectId) {
     try {
       console.log("Fetching item details for:", objectId);
-      
+
       // Add a longer delay to ensure the object is available on-chain
       await new Promise(resolve => setTimeout(resolve, 4000));
-      
+
       const objectDetails = await this.suiClient.getObject({
         id: objectId,
-        options: { 
+        options: {
           showContent: true,
           showType: true,
           showOwner: true,
           showPreviousTransaction: true
         }
       });
-      
+
       console.log("Object details:", objectDetails);
-      
+
       if (objectDetails.data && objectDetails.data.content && objectDetails.data.content.fields) {
         const itemName = this.bytesToString(objectDetails.data.content.fields.name);
         console.log("Extracted item name:", itemName);
-        
+
         // NEW: Show a celebratory text popup on screen
         const displayText = this.add.text(
           this.cameras.main.centerX,
@@ -560,12 +560,12 @@ export class MenuScene extends Phaser.Scene {
             onComplete: () => displayText.destroy()
           });
         });
-        
+
         // Update the status text with the correct item name
         if (this.chestStatusText) {
           this.chestStatusText.setText(`You received: ${itemName.replace(/_/g, ' ')}!`);
         }
-        
+
         // Update inventories with the correct item name
         const homeScene = this.scene.get('HomeScene');
         if (homeScene && homeScene.playerInventory) {
@@ -575,26 +575,26 @@ export class MenuScene extends Phaser.Scene {
           homeScene.playerInventory.add(itemName);
           console.log(`Updated HomeScene inventory with correct item: ${itemName}`);
         }
-        
+
         // Update pending items with correct name
         const gameRegistry = this.registry;
         const currentItems = gameRegistry.get('pendingInventoryItems') || [];
-        const updatedItems = currentItems.filter(item => 
+        const updatedItems = currentItems.filter(item =>
           item !== "NEW_ITEM" && item !== "MYSTERY_ITEM"
         );
         updatedItems.push(itemName);
         gameRegistry.set('pendingInventoryItems', updatedItems);
-        
+
         return itemName;
       } else {
         console.error("Could not extract item details from object, trying alternative approach");
-        
+
         // Try to get all objects owned by the user and find the most recent ItemNFT
         await this.findRecentItemNFT();
       }
     } catch (error) {
       console.error("Error fetching created item name:", error);
-      
+
       // Try alternative approach - get all user's ItemNFTs and find the newest one
       await this.findRecentItemNFT();
     }
@@ -604,12 +604,12 @@ export class MenuScene extends Phaser.Scene {
   async findRecentItemNFT() {
     try {
       console.log("Trying alternative approach: finding recent ItemNFT for user");
-      
+
       const itemNftType = `${PACKAGE_ID}::${MODULE_NAME}::ItemNFT`;
       const objects = await this.suiClient.getOwnedObjects({
         owner: this.account,
         filter: { StructType: itemNftType },
-        options: { 
+        options: {
           showContent: true,
           showType: true,
           showPreviousTransaction: true
@@ -621,16 +621,16 @@ export class MenuScene extends Phaser.Scene {
       if (objects.data && objects.data.length > 0) {
         // Sort by creation time or use the last one
         const mostRecentItem = objects.data[objects.data.length - 1];
-        
+
         if (mostRecentItem.data && mostRecentItem.data.content && mostRecentItem.data.content.fields) {
           const itemName = this.bytesToString(mostRecentItem.data.content.fields.name);
           console.log("Found recent item:", itemName);
-          
+
           // Update the status text with the correct item name
           if (this.chestStatusText) {
             this.chestStatusText.setText(`You received: ${itemName.replace(/_/g, ' ')}!`);
           }
-          
+
           // Update inventories with the correct item name
           const homeScene = this.scene.get('HomeScene');
           if (homeScene && homeScene.playerInventory) {
@@ -639,20 +639,20 @@ export class MenuScene extends Phaser.Scene {
             homeScene.playerInventory.add(itemName);
             console.log(`Updated HomeScene inventory with correct item: ${itemName}`);
           }
-          
+
           // Update pending items with correct name
           const gameRegistry = this.registry;
           const currentItems = gameRegistry.get('pendingInventoryItems') || [];
-          const updatedItems = currentItems.filter(item => 
+          const updatedItems = currentItems.filter(item =>
             item !== "NEW_ITEM" && item !== "MYSTERY_ITEM"
           );
           updatedItems.push(itemName);
           gameRegistry.set('pendingInventoryItems', updatedItems);
-          
+
           return itemName;
         }
       }
-      
+
       console.log("Could not find any ItemNFTs for user");
     } catch (error) {
       console.error("Error in findRecentItemNFT:", error);
@@ -663,7 +663,7 @@ export class MenuScene extends Phaser.Scene {
   bytesToString(bytes) {
     try {
       console.log("Converting bytes to string:", bytes);
-      
+
       if (Array.isArray(bytes)) {
         // Convert array of numbers to string
         const result = String.fromCharCode(...bytes);
@@ -687,7 +687,7 @@ export class MenuScene extends Phaser.Scene {
           return result;
         }
       }
-      
+
       console.log("Could not convert bytes, using fallback");
       return "Unknown Item";
     } catch (error) {
@@ -700,17 +700,17 @@ export class MenuScene extends Phaser.Scene {
     if (this.chestTimer) {
       this.chestTimer.remove();
     }
-    
+
     this.chestTimer = this.time.addEvent({
       delay: 1000,
       callback: () => {
         this.chestCooldownRemaining = Math.max(0, this.chestCooldownRemaining - 1000);
-        
+
         if (this.chestStatusText) {
           if (this.chestCooldownRemaining <= 0) {
             this.chestStatusText.setText("Ready to open!");
             this.chestStatusText.setColor("#4CAF50");
-            
+
             if (this.chestButton) {
               // Update button text safely
               const buttonText = this.chestButton.list?.[2];
@@ -721,7 +721,7 @@ export class MenuScene extends Phaser.Scene {
               this.chestButton.removeAllListeners('pointerdown');
               this.chestButton.on('pointerdown', () => this.openChest());
             }
-            
+
             this.chestTimer.remove();
           } else {
             this.chestStatusText.setText(this.formatCooldownTime(this.chestCooldownRemaining));
@@ -737,7 +737,7 @@ export class MenuScene extends Phaser.Scene {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
-    
+
     if (hours > 0) {
       return `${hours}h ${minutes}m ${seconds}s`;
     } else if (minutes > 0) {
@@ -753,10 +753,10 @@ export class MenuScene extends Phaser.Scene {
       const particle = this.add.graphics()
         .fillStyle(0xffd700, 1)
         .fillCircle(0, 0, 3);
-      
+
       particle.x = this.cameras.main.centerX;
       particle.y = this.cameras.main.centerY - 100;
-      
+
       this.tweens.add({
         targets: particle,
         x: particle.x + Phaser.Math.Between(-100, 100),
@@ -766,14 +766,14 @@ export class MenuScene extends Phaser.Scene {
         ease: 'Power2',
         onComplete: () => particle.destroy()
       });
-      
+
       particles.push(particle);
     }
   }
 
   displayAvatarInfo(x, y) {
     if (!this.userAvatar) return;
-    
+
     const avatarX = x;
     const avatarY = y - 100;
     const avatarSize = 120;
@@ -786,7 +786,7 @@ export class MenuScene extends Phaser.Scene {
     const avatarImage = this.add.image(avatarX, avatarY, avatarImageKey)
       .setOrigin(0.5)
       .setDisplaySize(avatarSize, avatarSize);
-    
+
     const shape = this.make.graphics().fillCircle(avatarX, avatarY, avatarSize / 2);
     avatarImage.setMask(shape.createGeometryMask());
 
@@ -830,7 +830,7 @@ export class MenuScene extends Phaser.Scene {
       "Start New Game",
       () => this.startGame()
     );
-    
+
     this.createStyledButton(
       x,
       y + buttonSpacing,
@@ -846,17 +846,17 @@ export class MenuScene extends Phaser.Scene {
     const button = this.add.container(x, y);
 
     const background = this.add.graphics()
-        .fillStyle(0x1a1a1a, 1)
-        .fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 15);
+      .fillStyle(0x1a1a1a, 1)
+      .fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 15);
 
     const border = this.add.graphics()
-        .lineStyle(3, 0xd4af37, 1)
-        .strokeRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 15);
+      .lineStyle(3, 0xd4af37, 1)
+      .strokeRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 15);
 
     const buttonText = this.add.text(0, 0, text, {
-        fontFamily: "Georgia, serif",
-        fontSize: "22px",
-        color: "#ffffffff",
+      fontFamily: "Georgia, serif",
+      fontSize: "22px",
+      color: "#ffffffff",
     }).setOrigin(0.5);
 
     button.add([background, border, buttonText]);
@@ -865,15 +865,15 @@ export class MenuScene extends Phaser.Scene {
 
     if (callback) {
       button.on('pointerover', () => {
-          buttonText.setColor('#ffffff');
-          border.clear().lineStyle(3, 0xffffff, 1).strokeRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 15);
-          this.tweens.add({ targets: button, scale: 1.05, duration: 200, ease: 'Sine.easeOut' });
+        buttonText.setColor('#ffffff');
+        border.clear().lineStyle(3, 0xffffff, 1).strokeRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 15);
+        this.tweens.add({ targets: button, scale: 1.05, duration: 200, ease: 'Sine.easeOut' });
       });
 
       button.on('pointerout', () => {
-          buttonText.setColor('#d4af37');
-          border.clear().lineStyle(3, 0xd4af37, 1).strokeRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 15);
-          this.tweens.add({ targets: button, scale: 1, duration: 200, ease: 'Sine.easeIn' });
+        buttonText.setColor('#d4af37');
+        border.clear().lineStyle(3, 0xd4af37, 1).strokeRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 15);
+        this.tweens.add({ targets: button, scale: 1, duration: 200, ease: 'Sine.easeIn' });
       });
 
       button.on('pointerdown', callback);
@@ -898,13 +898,13 @@ export class MenuScene extends Phaser.Scene {
         this.statusText.setVisible(true);
         this.statusText.setText('Creating transaction...');
       }
-      
+
       const tx = new Transaction();
-      
+
       // 1. Collect entrance fee and add to reward pool
       const ENTRANCE_FEE = 50000000; // 0.05 OCT
       const [feeCoin] = tx.splitCoins(tx.gas, [tx.pure.u64(ENTRANCE_FEE)]);
-      
+
       tx.moveCall({
         target: `${PACKAGE_ID}::${MODULE_NAME}::start_game_with_fee`,
         arguments: [
@@ -919,38 +919,38 @@ export class MenuScene extends Phaser.Scene {
         options: {
           showEffects: true,
           showObjectChanges: true
-      }
-    });
-    console.log("FULL transaction result:", JSON.stringify(result, null, 2));
-    
-    loadingText.setText("Payment successful! Starting game...");
-    loadingText.setColor("#4CAF50");
-
-    // Hide status text
-    if (this.statusText) {
-      this.statusText.setVisible(false);
-    }
-
-    // Small delay before transitioning
-    this.time.delayedCall(1000, () => {
-      loadingText.destroy();
-      this.scene.start('HomeScene', {
-        account: this.account,
-        suiClient: this.suiClient,
-        userAvatar: this.userAvatar, 
+        }
       });
-    });
+      console.log("FULL transaction result:", JSON.stringify(result, null, 2));
+
+      loadingText.setText("Payment successful! Starting game...");
+      loadingText.setColor("#4CAF50");
+
+      // Hide status text
+      if (this.statusText) {
+        this.statusText.setVisible(false);
+      }
+
+      // Small delay before transitioning
+      this.time.delayedCall(1000, () => {
+        loadingText.destroy();
+        this.scene.start('HomeScene', {
+          account: this.account,
+          suiClient: this.suiClient,
+          userAvatar: this.userAvatar,
+        });
+      });
 
     } catch (error) {
       console.error("Failed to start game:", error);
       loadingText.setText("Payment Failed or Cancelled.");
       loadingText.setColor("#ff6b6b");
-      
+
       // Hide status text
       if (this.statusText) {
         this.statusText.setVisible(false);
       }
-      
+
       this.time.delayedCall(3000, () => loadingText.destroy());
     }
   }

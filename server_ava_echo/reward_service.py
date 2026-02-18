@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 class RewardManager:
     """Manages game completion and reward calculation (NO blockchain calls)"""
     
-    # Reward calculation constants (in smallest OCT units = 10^-9)
+    # Reward calculation constants (in smallest ECHO units = 10^-9)
     BASE_REWARD = int(0.1 * 1e9)
     SCORE_MULTIPLIER = int(0.0001 * 1e9)
     MAX_REWARD = int(5 * 1e9)

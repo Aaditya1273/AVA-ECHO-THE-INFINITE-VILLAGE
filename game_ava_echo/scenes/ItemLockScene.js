@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import { Transaction } from '@mysten/sui/transactions';
 
-import { PACKAGE_ID, MODULE_NAME, itemNftStructType } from "../oneConfig.js";
+import { PACKAGE_ID, MODULE_NAME, itemStructType } from "../avaConfig.js";
 
 export class ItemLockScene extends Phaser.Scene {
     constructor() {
@@ -38,7 +38,7 @@ export class ItemLockScene extends Phaser.Scene {
         const villagerInfo = this.gameData.villagers.find(v => v.id === this.villager.name);
         const requiredItemName = this.villager.requiredItem.replace(/_/g, ' ');
 
-        this.add.text(panelX, panelY - panelHeight / 2+ 50, `Villager Requires ${requiredItemName}`, {
+        this.add.text(panelX, panelY - panelHeight / 2 + 50, `Villager Requires ${requiredItemName}`, {
             fontFamily: 'Georgia, serif', fontSize: '32px', color: '#ffffff', align: 'center'
         }).setOrigin(0.5);
 
@@ -48,12 +48,12 @@ export class ItemLockScene extends Phaser.Scene {
 
         // Check if player has the item and show appropriate status
         const hasItem = this.playerInventory && this.playerInventory.has(this.villager.requiredItem);
-        
-        this.statusText = this.add.text(panelX, panelY + 50, 
-            hasItem ? `You have the ${requiredItemName}!` : `You need to find a ${requiredItemName} first.`, 
+
+        this.statusText = this.add.text(panelX, panelY + 50,
+            hasItem ? `You have the ${requiredItemName}!` : `You need to find a ${requiredItemName} first.`,
             {
-                fontFamily: 'Arial', fontSize: '22px', 
-                color: hasItem ? '#4CAF50' : '#ff6b6b', 
+                fontFamily: 'Arial', fontSize: '22px',
+                color: hasItem ? '#4CAF50' : '#ff6b6b',
                 align: 'center'
             }
         ).setOrigin(0.5);
@@ -74,7 +74,7 @@ export class ItemLockScene extends Phaser.Scene {
         this.statusText.setText("Checking your wallet for the item...");
 
         try {
-            const itemNftType = itemNftStructType();
+            const itemNftType = itemStructType();
             const objects = await this.suiClient.getOwnedObjects({
                 owner: this.account,
                 filter: { StructType: itemNftType },
@@ -105,7 +105,7 @@ export class ItemLockScene extends Phaser.Scene {
                 arguments: [tx.object(itemToBurn.objectId)],
             });
 
-            await window.onechainWallet.signAndExecuteTransaction({ transaction: tx });
+            await window.avaEchoWallet.signAndExecuteTransaction({ transaction: tx });
 
             // Get a reference to HomeScene to update its inventory directly
             const homeScene = this.scene.get('HomeScene');
@@ -116,7 +116,7 @@ export class ItemLockScene extends Phaser.Scene {
 
             this.statusText.setText("Trade successful! The villager will talk to you now.");
             this.events.emit('villagerUnlocked', this.villager.name);
-            
+
             // Update the parent scene's inventory from blockchain
             this.time.delayedCall(500, () => {
                 if (homeScene) {

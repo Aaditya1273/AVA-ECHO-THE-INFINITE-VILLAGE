@@ -13,12 +13,51 @@ class BlockchainService:
         # Load Avalanche configuration
         self.rpc_url = os.getenv('AVALANCHE_RPC_URL', "https://subnets.avax.network/myechochain/testnet/rpc")
         self.admin_address = os.getenv('ADMIN_ADDRESS')
-        self.contract_id = os.getenv('CONTRACT_ID') # Move Package ID or EVM Contract Address
+        self.package_id = os.getenv('PACKAGE_ID', "0x_echo_package_id")
+        self.module_name = os.getenv('MODULE_NAME', "contracts")
         
         if not self.admin_address:
             logger.warning("ADMIN_ADDRESS not set - on-chain features may be limited")
             
         logger.info(f"Initialized BlockchainService for Avalanche L1: {self.rpc_url}")
+    
+    async def commit_mystery_hash(
+        self,
+        game_session_id: str,
+        mystery_hash: str
+    ) -> Optional[str]:
+        """
+        Commits the mystery hash to the Avalanche L1 (Move VM).
+        This proves the mystery was pre-generated and hasn't changed.
+        """
+        try:
+            # MOCK implementation for Avalanche Move VM interaction
+            logger.info(f"--- BLOCKCHAIN: Committing Mystery Hash ---")
+            logger.info(f"Target: {self.package_id}::{self.module_name}::commit_mystery_hash")
+            logger.info(f"Session: {game_session_id}")
+            logger.info(f"Hash: {mystery_hash}")
+            
+            # Implementation would use a Move VM SDK to sign and broadcast
+            return "0x_mock_hash_commitment_tx_id"
+        except Exception as e:
+            logger.error(f"Error committing hash: {e}")
+            return None
+
+    async def execute_sponsored_transaction(
+        self,
+        payload: dict
+    ) -> Optional[str]:
+        """
+        Account Abstraction: Executes a transaction sponsored by the game server.
+        The user doesn't need gas (AVAX/ECHO).
+        """
+        try:
+            logger.info(f"--- BLOCKCHAIN: Executing Sponsored Transaction (AA) ---")
+            # In a real Avalanche L1, the server would pay the ECHO/AVAX fee
+            return "0x_mock_sponsored_tx_id"
+        except Exception as e:
+            logger.error(f"Error in sponsored txn: {e}")
+            return None
     
     async def create_reward_claim(
         self,
