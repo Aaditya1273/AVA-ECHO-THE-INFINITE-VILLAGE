@@ -17,6 +17,7 @@ from schemas import *
 from game_logic.engine import GameEngine
 from game_logic.state_manager import GameState
 from reward_service import RewardManager, RewardValidator
+from blockchain_service import BlockchainService
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -50,7 +51,8 @@ async def startup_event():
         sys.exit("API Key is not configured. Shutting down.")
     
     print("API Key found. Initializing Game Engine...")
-    game_engine = GameEngine(api_key=API_KEY)
+    blockchain_service = BlockchainService()
+    game_engine = GameEngine(api_key=API_KEY, blockchain_service=blockchain_service)
     if not game_engine.llm_api.model:
         sys.exit("Failed to initialize Gemini Model.")
     print("Game Engine initialized successfully.")

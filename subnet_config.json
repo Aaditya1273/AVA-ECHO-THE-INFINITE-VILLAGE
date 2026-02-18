@@ -1,0 +1,34 @@
+{
+    "name": "AvaEchoChain",
+    "chainId": 9000,
+    "tokenSymbol": "ECHO",
+    "gasParameters": {
+        "targetGas": 10000000,
+        "minBaseFee": 1000000000,
+        "targetBlockRate": 1,
+        "baseFeeChangeDenominator": 36,
+        "minBlockGasCost": 0,
+        "maxBlockGasCost": 1000000,
+        "blockGasCostStep": 100000
+    },
+    "airdrop": [
+        {
+            "address": "0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC",
+            "amount": "1000000000000000000000000"
+        }
+    ],
+    "precompiles": {
+        "contractDeployerListConfig": {
+            "block": 0,
+            "adminAddresses": [
+                "0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC"
+            ]
+        },
+        "feeConfigConfig": {
+            "block": 0,
+            "adminAddresses": [
+                "0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC"
+            ]
+        }
+    }
+}

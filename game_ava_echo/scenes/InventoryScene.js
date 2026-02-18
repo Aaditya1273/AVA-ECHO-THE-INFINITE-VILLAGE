@@ -41,13 +41,43 @@ export class InventoryScene extends Phaser.Scene {
         } else {
             this.inventory.forEach((item, index) => {
                 const itemName = item.replace(/_/g, ' ');
-                this.add.text(panelX, panelY - panelHeight / 2 + 120 + (index * 40), `• ${itemName}`, {
+                const itemY = panelY - panelHeight / 2 + 120 + (index * 60);
+
+                this.add.text(panelX - 50, itemY, `• ${itemName}`, {
                     fontFamily: 'Arial', fontSize: '24px', color: '#ffffff'
                 }).setOrigin(0.5);
+
+                const tpBtn = this.add.text(panelX + 100, itemY, '[TELEPORT]', {
+                    fontFamily: 'Arial', fontSize: '14px', color: '#d4af37',
+                    backgroundColor: '#333333', padding: { x: 5, y: 5 }
+                }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+                tpBtn.on('pointerdown', () => this.simulateTeleport(item));
             });
         }
 
         this.createButton(panelX, panelY + panelHeight / 2 - 60, 'Close', () => this.closeScene());
+    }
+
+    async simulateTeleport(item) {
+        const feedback = this.add.text(this.cameras.main.centerX, 100, `Teleporting ${item} via Avalanche Teleporter...`, {
+            fontSize: '18px', color: '#ffffff', backgroundColor: '#d4af37', padding: { x: 10, y: 5 }
+        }).setOrigin(0.5);
+
+        await new Promise(r => setTimeout(r, 1500));
+        feedback.setText(`${item} sent to Avalanche C-Chain!`);
+
+        // Remove from local display
+        this.inventory = this.inventory.filter(i => i !== item);
+        const homeScene = this.scene.get('HomeScene');
+        if (homeScene && homeScene.playerInventory) {
+            homeScene.playerInventory.delete(item);
+        }
+
+        this.time.delayedCall(2000, () => {
+            feedback.destroy();
+            this.scene.restart(); // Refresh list
+        });
     }
 
     closeScene() {

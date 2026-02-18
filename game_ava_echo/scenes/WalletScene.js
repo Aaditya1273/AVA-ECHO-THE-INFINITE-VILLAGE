@@ -112,9 +112,26 @@ export class WalletScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
+    // --- ADVANCED: Account Abstraction (Social Login Simulation) ---
+    this.add.text(centerX, centerY + 80, 'OR', {
+      fontFamily: 'Arial', fontSize: '18px', color: '#888888'
+    }).setOrigin(0.5);
+
+    const googleBtn = this.add.container(centerX, centerY + 130);
+    const gBg = this.add.graphics();
+    gBg.fillStyle(0xffffff, 1);
+    gBg.fillRoundedRect(-140, -25, 280, 50, 10);
+    const gText = this.add.text(0, 0, 'Sign in with Google', {
+      fontFamily: 'Arial', fontSize: '18px', color: '#444444', fontStyle: 'bold'
+    }).setOrigin(0.5);
+    googleBtn.add([gBg, gText]);
+    googleBtn.setSize(280, 50).setInteractive({ useHandCursor: true });
+
+    googleBtn.on('pointerdown', () => this.simulateSocialLogin());
+
     this.createButton(
       centerX,
-      centerY + 20,
+      centerY - 10,
       'Connect Wallet',
       () => this.connectWallet()
     );
