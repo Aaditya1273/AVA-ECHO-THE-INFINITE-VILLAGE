@@ -338,7 +338,7 @@ export class EndScene extends Phaser.Scene {
                 ],
             });
 
-            const result = await window.onechainWallet.signAndExecuteTransaction({
+            const result = await window.avaEchoWallet.signAndExecuteTransaction({
                 transaction: tx,
                 options: { showEffects: true }
             });

@@ -316,7 +316,7 @@ export class WalletScene extends Phaser.Scene {
   }
 
   async findWalletProvider() {
-    if (window.onechainWallet) return window.onechainWallet;
+    if (window.avaEchoWallet) return window.avaEchoWallet;
   }
 
   async registerUserInContract(walletProvider) {
