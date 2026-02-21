@@ -902,7 +902,7 @@ export class MenuScene extends Phaser.Scene {
       const tx = new Transaction();
 
       // 1. Collect entrance fee and add to reward pool
-      const ENTRANCE_FEE = 50000000; // 0.05 OCT
+      const ENTRANCE_FEE = 50000000; // 0.05 ECHO
       const [feeCoin] = tx.splitCoins(tx.gas, [tx.pure.u64(ENTRANCE_FEE)]);
 
       tx.moveCall({
@@ -914,7 +914,7 @@ export class MenuScene extends Phaser.Scene {
         ],
       });
 
-      const result = await window.onechainWallet.signAndExecuteTransaction({
+      const result = await window.avaEchoWallet.signAndExecuteTransaction({
         transaction: tx,
         options: {
           showEffects: true,

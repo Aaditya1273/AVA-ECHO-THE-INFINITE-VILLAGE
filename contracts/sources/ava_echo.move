@@ -1,13 +1,18 @@
 #[allow(duplicate_alias)]
 module contracts::contracts {
-    // use movement::table::{Self, Table};
-    // use movement::random::{Self, Random};
-    // use std::event;
-    // use echo::object::{Self, UID, ID};
-    // use echo::tx_context::{Self, TxContext};
-    // use echo::transfer;
-    // use echo::clock::{Self, Clock};
+    use sui::table::{Self, Table};
+    use sui::random::{Self, Random};
+    use sui::event;
+    use sui::object::{Self, UID, ID};
+    use sui::tx_context::{Self, TxContext};
+    use sui::transfer;
+    use sui::clock::{Self, Clock};
+    use sui::balance::{Self, Balance};
+    use sui::coin::{Self, Coin};
     use std::vector;
+    
+    /// The native token of the Ava-Echo Subnet
+    public struct ECHO has drop {}
 
     // Error constants
     const E_INSUFFICIENT_FUNDS: u64 = 1;
@@ -368,7 +373,7 @@ module contracts::contracts {
     public entry fun init_reward_pool(ctx: &mut TxContext) {
         let pool = RewardPool {
             id: object::new(ctx),
-            balance: balance::zero(),
+            balance: balance::zero<ECHO>(),
             total_collected: 0,
             total_distributed: 0,
             admin: tx_context::sender(ctx),
@@ -378,7 +383,7 @@ module contracts::contracts {
 
     public entry fun start_game_with_fee(
         pool: &mut RewardPool,
-        payment: Coin<OCT>,
+        payment: Coin<ECHO>,
         clock: &Clock,
         ctx: &mut TxContext
     ) {
@@ -500,7 +505,7 @@ module contracts::contracts {
         });
     }
 
-    public entry fun fund_reward_pool(pool: &mut RewardPool, funding: Coin<OCT>) {
+    public entry fun fund_reward_pool(pool: &mut RewardPool, funding: Coin<ECHO>) {
         let funding_balance = coin::into_balance(funding);
         let amount = balance::value(&funding_balance);
         balance::join(&mut pool.balance, funding_balance);

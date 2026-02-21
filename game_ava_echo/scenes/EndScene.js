@@ -273,7 +273,7 @@ export class EndScene extends Phaser.Scene {
             }
 
             this.rewardAmount = this.calculateExpectedReward(this.gameScore, this.isTrueEnding);
-            console.log("Proof created successfully! ID:", this.proofObjectId, "Reward:", this.rewardAmount / 1e9, "OCT");
+            console.log("Proof created successfully! ID:", this.proofObjectId, "Reward:", this.rewardAmount / 1e9, "ECHO");
             return true;
 
         } catch (error) {
@@ -299,8 +299,8 @@ export class EndScene extends Phaser.Scene {
         const centerX = this.cameras.main.centerX;
         const centerY = this.cameras.main.centerY;
 
-        const rewardOCT = (this.rewardAmount / 1e9).toFixed(2);
-        this.add.text(centerX, centerY + 300, `Reward: ${rewardOCT} OCT`, {
+        const rewardECHO = (this.rewardAmount / 1e9).toFixed(2);
+        this.add.text(centerX, centerY + 300, `Reward: ${rewardECHO} ECHO`, {
             fontFamily: 'Arial',
             fontSize: '24px',
             color: '#f1c40f',
@@ -351,8 +351,8 @@ export class EndScene extends Phaser.Scene {
                 (result.digest && !result.effects?.status?.error);
 
             if (isSuccess) {
-                const rewardOCT = (this.rewardAmount / 1e9).toFixed(2);
-                this.submissionStatusText.setText(`🎉 Claimed ${rewardOCT} ECHO! Check your wallet.`);
+                const rewardECHO = (this.rewardAmount / 1e9).toFixed(2);
+                this.submissionStatusText.setText(`🎉 Claimed ${rewardECHO} ECHO! Check your wallet.`);
                 this.submissionStatusText.setColor('#2ecc71');
             } else {
                 const errorMsg = result.effects?.status?.error || 'Unknown error';
