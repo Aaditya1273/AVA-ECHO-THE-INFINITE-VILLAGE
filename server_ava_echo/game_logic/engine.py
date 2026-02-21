@@ -38,8 +38,11 @@ class GameEngine:
         game_state.player_state["on_chain_mystery_hash"] = mystery_hash
         
         print(f"--- PROOF OF INNOVATION: Mystery Hash Created: {mystery_hash} ---")
-        # In a real flow, we would trigger self.blockchain.commit_mystery_hash(game_id, mystery_hash)
-        # but for demo we log it.
+        if self.blockchain:
+            import asyncio
+            # In a production FastAPI environment, we'd use a background task
+            # here we trigger it to ensure "Realism"
+            asyncio.create_task(self.blockchain.commit_mystery_hash(game_id, mystery_hash))
         
         game_state.player_state["knowledge_summary"] = "You've just woken up in a cozy cottage. A kind old man named Arthur tells you he found you unconscious by a car wreck on the edge of the woods. He says he searched the area but saw no sign of your friends. As he speaks, you remember a faint, desperate call in your mind: 'Help us... find us...' You've just thanked him and stepped outside into the village square to begin your search."
         

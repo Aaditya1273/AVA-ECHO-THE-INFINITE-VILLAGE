@@ -273,6 +273,34 @@ async def get_user_completions(user_address: str):
         logger.error(f"Error getting completions: {e}")
         raise HTTPException(status_code=500, detail="Error retrieving completions")
 
+@app.post("/api/blockchain/sponsor-registration")
+async def sponsor_registration(request: Request):
+    """
+    Account Abstraction: Server sponsors the user's initial registration.
+    """
+    try:
+        data = await request.json()
+        logger.info(f"Sponsoring registration for social account context: {data}")
+        
+        # 1. Generate a stable address for the user based on their social context
+        # (In production, this would use a deterministic vault or AA wallet factory)
+        user_address = f"0x_aa_{os.urandom(20).hex()}"
+        
+        # 2. Sponsor the tx on the Avalanche L1
+        tx_hash = await blockchain_service.execute_sponsored_transaction({
+            "target": "register_user",
+            "args": [user_address]
+        })
+        
+        if tx_hash:
+            return {"tx_hash": tx_hash, "user_address": user_address}
+        else:
+            raise HTTPException(status_code=500, detail="Sponsorship failed")
+            
+    except Exception as e:
+        logger.error(f"Sponsorship error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

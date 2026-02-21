@@ -147,12 +147,18 @@ module contracts::contracts {
     /***********************
      * TELEPORTER (Mock)
      ***********************/
-    public entry fun teleport_item(item: ItemNFT, _target_chain_id: u64, _ctx: &mut TxContext) {
-        // MOCK: In a real Avalanche L1, this would call the Teleporter Messenger
-        // Here we just burn the item on this chain to simulate "porting" it away.
-        let ItemNFT { id, name: _ } = item;
+    public entry fun teleport_item(item: ItemNFT, target_chain_id: u64, _ctx: &mut TxContext) {
+        let ItemNFT { id, name } = item;
+        let item_id = object::uid_to_inner(&id);
+        
+        event::emit(TeleportRequest {
+            owner: tx_context::sender(_ctx),
+            item_id,
+            item_name: name,
+            target_chain_id,
+        });
+
         object::delete(id);
-        // Event would be emitted here for the relayer
     }
 
     public fun name(item: &ItemNFT): &vector<u8> {
@@ -368,6 +374,13 @@ module contracts::contracts {
         player: address,
         amount: u64,
         game_session_id: vector<u8>,
+    }
+
+    public struct TeleportRequest has copy, drop {
+        owner: address,
+        item_id: ID,
+        item_name: vector<u8>,
+        target_chain_id: u64,
     }
 
     public entry fun init_reward_pool(ctx: &mut TxContext) {

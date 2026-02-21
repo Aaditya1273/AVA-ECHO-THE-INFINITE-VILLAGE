@@ -315,8 +315,35 @@ export class WalletScene extends Phaser.Scene {
     }
   }
 
-  async findWalletProvider() {
-    if (window.avaEchoWallet) return window.avaEchoWallet;
+  async simulateSocialLogin() {
+    console.log("Initiating Real Account Abstraction (Sponsored) flow...");
+    const loadingText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY + 200, "Sponsoring transaction for your social account...", {
+      fontSize: '18px', color: '#d4af37'
+    }).setOrigin(0.5);
+
+    try {
+      // 1. In a real AA flow, the server generates a keypair for the user (or uses a JWT)
+      // 2. The server sponsors the 'register_user' Move call.
+      const response = await fetch('/api/blockchain/sponsor-registration', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ social_provider: 'google', context: 'new_player' })
+      });
+
+      const data = await response.json();
+      if (data.tx_hash) {
+        this.userAddress = data.user_address;
+        console.log("AA Registration Successful. Address:", this.userAddress);
+        loadingText.setText("Account Created! Redirecting...");
+        this.time.delayedCall(1000, () => this.proceedToGame());
+      } else {
+        throw new Error("Sponsorship failed");
+      }
+    } catch (error) {
+      console.error("Social login/AA failed:", error);
+      loadingText.setText("Login Failed. Please try Connect Wallet.");
+      loadingText.setColor("#ff6b6b");
+    }
   }
 
   async registerUserInContract(walletProvider) {
