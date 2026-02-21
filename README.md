@@ -88,7 +88,7 @@ To deliver this experience, we leverage the best of **Avalanche 9000**:
 
 3.  **Setup Frontend**
     ```bash
-    cd game_onechain
+    cd game_ava_echo
     npm install
     npm run dev
     ```
