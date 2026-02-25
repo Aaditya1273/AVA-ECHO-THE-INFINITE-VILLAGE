@@ -36,10 +36,11 @@ Items you find (e.g., Shattered Locket, Ancient Key) are Dynamic NFTs on your Av
 To deliver this experience, we leverage the best of **Avalanche 9000**:
 
 *   **Custom L1 (Subnet)**: Ava-Echo runs on its own dedicated L1, ensuring zero congestion and custom gas logic.
-*   **Interchain Messaging (Teleporter)**: We enable "Asset Portability." Items found in Ava-Echo can be sent to other Avalanche games or marketplaces via Teleporter.
-*   **Move Language**: By using Move on Avalanche (via Movement or custom VM), we offer the highest level of security for in-game assets, preventing common "re-entrancy" hacks.
-*   **Backend**: FastAPI (Python) acting as the "Game Master," orchestrating Gemini AI and blockchain events.
-*   **Frontend**: Phaser 3 (JavaScript/React) for an immersive 2D experience.
+*   **Interchain Messaging (Teleporter)**: Real event-driven asset portability. Items can be moved between Avalanche L1s via `TeleportRequest` events.
+*   **Account Abstraction**: Social login via sponsored transactions, providing an "Invisible Blockchain" experience.
+*   **Move Smart Contracts**: Secure, asset-oriented logic for item minting, scores, and mystery commitments.
+*   **Backend**: FastAPI (Python) acting as the "Game Master," orchestrating Gemini AI (Google Cloud) and real-time blockchain signing.
+*   **Frontend**: Phaser 3 (JavaScript/React) for an immersive, voice-enabled investigative experience.
 
 ---
 
@@ -80,9 +81,9 @@ To deliver this experience, we leverage the best of **Avalanche 9000**:
 
 2.  **Setup Backend**
     ```bash
-    cd server_centralized
+    cd server_ava_echo
     pip install -r requirements.txt
-    # Configure your .env with GEMINI_API_KEY
+    # Configure your .env with GEMINI_API_KEY and ADMIN_PRIVATE_KEY
     python main.py
     ```
 
