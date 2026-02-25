@@ -22,6 +22,27 @@ class GeminiAPI:
             text_response = text_response[:-3]
         return text_response.strip()
 
+    import time
+    from functools import wraps
+
+    def retry_on_failure(retries=3, delay=1):
+        def decorator(func):
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                last_error = None
+                for i in range(retries):
+                    try:
+                        return func(*args, **kwargs)
+                    except Exception as e:
+                        last_error = e
+                        print(f"⚠️ API attempt {i+1} failed: {e}. Retrying in {delay}s...")
+                        time.sleep(delay)
+                print(f"❌ API permanently failed after {retries} attempts.")
+                return "{}"
+            return wrapper
+        return decorator
+
+    @retry_on_failure(retries=3, delay=2)
     def generate_content(self, prompt_type, context):
         if not self.model: return "{}"
         print(f"\n--- 🤖 Live Gemini API Call ({prompt_type}) ---")
@@ -36,13 +57,13 @@ class GeminiAPI:
             print(f"--- ERROR: No prompt found for type '{prompt_type}' ---")
             return "{}"
 
-        print("--- Sending Prompt to Gemini... (This may take a moment) ---")
-        try:
-            response = self.model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
-            return self._clean_json_response(response.text)
-        except Exception as e:
-            print(f"❌ An error occurred during the API call: {e}")
-            return "{}"
+        print("--- Sending Prompt to Gemini... (Production Retry Enabled) ---")
+        response = self.model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
+        
+        if not response or not response.text:
+            raise ValueError("Empty response from AI")
+            
+        return self._clean_json_response(response.text)
 
     def _create_story_generator_prompt(self, context):
         return f"""
@@ -109,11 +130,11 @@ class GeminiAPI:
         The difficulty is: **{difficulty.upper()}**.
         The core secret of the village is: **{context['story_theme']}**
 
-        **Guiding Principles:**
-        - **Clarity of Content is Paramount:** The `content` field must be written to be as clear as possible for the player.
-            - If `type` is `Information`, the `content` is a direct clue the player learns with complete brief of clue history, direction and reason.
-            - If `type` is `TalkToVillager`, the `content` **MUST** explicitly name the villager to talk to and give a clear reason and also where they will be found/ are. **Bad example:** 'The river holds many secrets.' **Good example:** 'You should go speak with Old Mara by the river; she knows things about the recent disappearances.'
-        - **Character-Driven:** Clues must originate from the villager's personality and their role in the secret.
+        **World-Class Narrative Principles:**
+        - **Show, Don't Tell**: Use sensory details (smells, sounds) to anchor the clue in the Misty Village environment.
+        - **Clarity of Content**: The `content` field must be an exhaustive brief of clue history, direction, and reasoning.
+        - **Interconnectedness**: Clues should form a logical chain, like a "Detective's Red String" board.
+        - **Character Voice**: Every clue must feel like it was whispered, shouted, or hidden by a specific villager.
         - **Difficulty:** {difficulty_instructions}
 
         **Node Structure:**

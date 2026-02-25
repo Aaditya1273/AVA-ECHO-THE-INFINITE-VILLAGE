@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 // Import the getConversation function to handle follow-up dialogue
-import { getConversation } from '../api'; 
+import { getConversation } from '../api';
 
 export class DialogueScene extends Phaser.Scene {
     constructor() {
@@ -8,7 +8,7 @@ export class DialogueScene extends Phaser.Scene {
         this.conversationData = null;
         this.villagerSpriteKey = null;
         this.newGameData = null;
-        this.rightPanelContainer = null; 
+        this.rightPanelContainer = null;
 
         this.voices = [];
         this._currentSpeechResolve = null;
@@ -39,7 +39,7 @@ export class DialogueScene extends Phaser.Scene {
         frame.strokeRoundedRect(framePadding, framePadding, frameWidth, frameHeight, cornerRadius);
         frame.setDepth(100);
         this.add.rectangle(0, 0, this.cameras.main.width, this.cameras.main.height, 0x000000, 0.7).setOrigin(0);
-        
+
         const panelWidth = this.cameras.main.width * 0.9;
         const panelHeight = this.cameras.main.height * 0.8;
         const panelX = this.cameras.main.centerX;
@@ -53,7 +53,7 @@ export class DialogueScene extends Phaser.Scene {
 
         // --- UI Creation ---
         this.createLeftPanel(panelX, panelY, panelWidth, panelHeight);
-        
+
         this.rightPanelContainer = this.add.container();
         this.displayConversationInRightPanel(panelX, panelY, panelWidth, panelHeight);
 
@@ -75,7 +75,7 @@ export class DialogueScene extends Phaser.Scene {
         this.cameras.main.fadeIn(500, 0, 0, 0);
     }
 
-    
+
     initTTS() {
         if (!('speechSynthesis' in window)) return;
         const populateVoiceList = () => {
@@ -87,21 +87,21 @@ export class DialogueScene extends Phaser.Scene {
         }
     }
 
-     stopSpeaking() {
-        try { window.speechSynthesis.cancel(); } catch(e) {}
+    stopSpeaking() {
+        try { window.speechSynthesis.cancel(); } catch (e) { }
         if (this._currentSpeechTimer) {
             clearTimeout(this._currentSpeechTimer);
             this._currentSpeechTimer = null;
         }
         if (this._currentSpeechResolve) {
-            try { this._currentSpeechResolve(); } catch(e) {}
+            try { this._currentSpeechResolve(); } catch (e) { }
             this._currentSpeechResolve = null;
         }
     }
 
-   speakText(text, speakerName) {
+    speakText(text, speakerName) {
         if (!('speechSynthesis' in window) || !text) return Promise.resolve();
-        
+
         this.stopSpeaking(); // Ensure any prior speech is stopped
 
         return new Promise((resolve) => {
@@ -115,9 +115,9 @@ export class DialogueScene extends Phaser.Scene {
             this._currentSpeechTimer = setTimeout(() => {
                 if (this._currentSpeechResolve) this._currentSpeechResolve();
             }, estimatedMs + 2000);
-             const villagerVoice = this.voices.find(v => /David|Google US English|en-US/i.test(v.name)) || this.voices.find(v => v.lang && v.lang.toLowerCase().startsWith('en')) || this.voices[0];
+            const villagerVoice = this.voices.find(v => /David|Google US English|en-US/i.test(v.name)) || this.voices.find(v => v.lang && v.lang.toLowerCase().startsWith('en')) || this.voices[0];
             if (villagerVoice) utterance.voice = villagerVoice;
-            
+
             utterance.pitch = 0.9;
             utterance.rate = 1.0;
             utterance.volume = 1.0;
@@ -130,7 +130,7 @@ export class DialogueScene extends Phaser.Scene {
                 if (this._currentSpeechResolve) this._currentSpeechResolve();
                 if (this._currentSpeechTimer) clearTimeout(this._currentSpeechTimer);
             };
-             try {
+            try {
                 window.speechSynthesis.speak(utterance);
             } catch (e) {
                 if (this._currentSpeechResolve) this._currentSpeechResolve();
@@ -152,9 +152,9 @@ export class DialogueScene extends Phaser.Scene {
             .setOrigin(0.5);
 
         const villagerName = this.conversationData.villager_name || "Villager";
-        
+
         // Correctly find the villager's title from the initial game data
-        const currentVillagerInfo = this.newGameData.villagers.find(v => v.id=== this.conversationData.villager_id);
+        const currentVillagerInfo = this.newGameData.villagers.find(v => v.id === this.conversationData.villager_id);
         const villagerTitle = currentVillagerInfo ? currentVillagerInfo.title : "Mysterious Figure";
 
         // --- Polished Title Display ---
@@ -191,7 +191,7 @@ export class DialogueScene extends Phaser.Scene {
 
         const rightPanelX = panelX + panelWidth / 4;
         const rightPanelY = panelY - panelHeight / 2 + 50;
-        
+
         const textStyle = {
             fontFamily: 'Arial',
             fontSize: '20px',
@@ -202,10 +202,10 @@ export class DialogueScene extends Phaser.Scene {
 
         const dialogueText = this.add.text(rightPanelX, rightPanelY, `"${this.conversationData.npc_dialogue}"`, textStyle).setOrigin(0.5, 0);
         this.rightPanelContainer.add(dialogueText);
-        this.speakText(this.conversationData.npc_dialogue,this.conversationData.villagerName);
+        this.speakText(this.conversationData.npc_dialogue, this.conversationData.villagerName);
 
         let startY = rightPanelY + dialogueText.getBounds().height + 50;
-        
+
         // --- Create Stylish Suggestion Buttons ---
         this.conversationData.player_suggestions.forEach((suggestion, index) => {
             const button = this.createSuggestionButton(rightPanelX, startY + (index * 70), suggestion, () => {
@@ -267,19 +267,55 @@ export class DialogueScene extends Phaser.Scene {
     async getNextDialogue(villagerId, playerMessage) {
         this.stopSpeaking();
         this.rightPanelContainer.removeAll(true);
-        const loadingText = this.add.text(this.cameras.main.centerX + this.cameras.main.width / 4, this.cameras.main.centerY, "...", {
-            fontSize: '24px',
-            color: '#ffffff'
-        }).setOrigin(0.5);
-        this.rightPanelContainer.add(loadingText);
+        this.showTypingIndicator();
 
-        const nextData = await getConversation(villagerId, playerMessage);
+        try {
+            const nextData = await getConversation(villagerId, playerMessage);
+            this.hideTypingIndicator();
 
-        if (nextData) {
-            this.conversationData = nextData;
-            this.displayConversationInRightPanel(this.cameras.main.centerX, this.cameras.main.centerY, this.cameras.main.width * 0.9, this.cameras.main.height * 0.8);
-        } else {
-            loadingText.setText("I... have nothing more to say.");
+            if (nextData && nextData.npc_dialogue) {
+                this.conversationData = nextData;
+                this.displayConversationInRightPanel(this.cameras.main.centerX, this.cameras.main.centerY, this.cameras.main.width * 0.9, this.cameras.main.height * 0.8);
+            } else {
+                throw new Error("Invalid AI response");
+            }
+        } catch (error) {
+            this.hideTypingIndicator();
+            const errorText = this.add.text(this.cameras.main.centerX + this.cameras.main.width / 4, this.cameras.main.centerY,
+                "The air grows cold... I have nothing more to say.", {
+                fontSize: '20px', color: '#ff4444', fontStyle: 'italic', align: 'center', wordWrap: { width: 300 }
+            }).setOrigin(0.5);
+            this.rightPanelContainer.add(errorText);
+        }
+    }
+
+    showTypingIndicator() {
+        const x = this.cameras.main.centerX + this.cameras.main.width / 4;
+        const y = this.cameras.main.centerY;
+
+        this.typingContainer = this.add.container(x, y);
+        const dots = [];
+        for (let i = 0; i < 3; i++) {
+            const dot = this.add.circle(-20 + (i * 20), 0, 5, 0xd4af37);
+            dots.push(dot);
+            this.typingContainer.add(dot);
+
+            this.tweens.add({
+                targets: dot,
+                y: -10,
+                duration: 400,
+                yoyo: true,
+                repeat: -1,
+                delay: i * 150
+            });
+        }
+        this.rightPanelContainer.add(this.typingContainer);
+    }
+
+    hideTypingIndicator() {
+        if (this.typingContainer) {
+            this.typingContainer.destroy();
+            this.typingContainer = null;
         }
     }
 }
