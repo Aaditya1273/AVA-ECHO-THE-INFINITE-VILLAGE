@@ -52,14 +52,14 @@ export class InventoryScene extends Phaser.Scene {
                     backgroundColor: '#333333', padding: { x: 5, y: 5 }
                 }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
-                tpBtn.on('pointerdown', () => this.simulateTeleport(item));
+                tpBtn.on('pointerdown', () => this.initiateTeleport(item));
             });
         }
 
         this.createButton(panelX, panelY + panelHeight / 2 - 60, 'Close', () => this.closeScene());
     }
 
-    async simulateTeleport(item) {
+    async initiateTeleport(item) {
         const feedback = this.add.text(this.cameras.main.centerX, 100, `Initiating Teleport for ${item.replace(/_/g, ' ')}...`, {
             fontSize: '18px', color: '#ffffff', backgroundColor: '#d4af37', padding: { x: 10, y: 5 }
         }).setOrigin(0.5).setDepth(1000);

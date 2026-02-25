@@ -7,14 +7,14 @@ import { PACKAGE_ID, MODULE_NAME, AVATAR_REGISTRY_OBJECT_ID, RANDOM_OBJECT_ID } 
 export class AvatarScene extends Phaser.Scene {
   constructor() {
     super({ key: "AvatarScene" });
-    this.suiClient = null;
+    this.echoClient = null;
     this.account = null;
     this.selectedAvatarId = null;
     this.previousSelectedBox = null;
   }
 
   init(data) {
-    this.suiClient = data?.suiClient;
+    this.echoClient = data?.echoClient;
     this.account = data?.account;
   }
 
@@ -49,9 +49,9 @@ export class AvatarScene extends Phaser.Scene {
     const hasAvatar = await this.checkUserHasAvatar();
     if (hasAvatar) {
       console.log("User already has an avatar, proceeding to game...");
-      const userAvatar = await AvatarUtils.getUserAvatar(this.suiClient, this.account);
+      const userAvatar = await AvatarUtils.getUserAvatar(this.echoClient, this.account);
       this.scene.start("MenuScene", {
-        suiClient: this.suiClient,
+        echoClient: this.echoClient,
         account: this.account,
         userAvatar: userAvatar
       });
@@ -63,7 +63,7 @@ export class AvatarScene extends Phaser.Scene {
   }
 
   async checkUserHasAvatar() {
-    if (!this.suiClient || !this.account) {
+    if (!this.echoClient || !this.account) {
       console.warn("Wallet not connected, cannot check avatar");
       return false;
     }
@@ -73,7 +73,7 @@ export class AvatarScene extends Phaser.Scene {
         target: `${PACKAGE_ID}::${MODULE_NAME}::has_avatar`,
         arguments: [tx.object(AVATAR_REGISTRY_OBJECT_ID), tx.pure.address(this.account)],
       });
-      const result = await this.suiClient.devInspectTransactionBlock({
+      const result = await this.echoClient.devInspectTransactionBlock({
         sender: this.account,
         transactionBlock: tx,
       });
@@ -184,7 +184,7 @@ export class AvatarScene extends Phaser.Scene {
 
 
   async mintRandomAvatar() {
-    if (!this.suiClient || !this.account) {
+    if (!this.echoClient || !this.account) {
       this.showError("Wallet not connected.");
       return;
     }
@@ -214,13 +214,13 @@ export class AvatarScene extends Phaser.Scene {
       statusText.setText("Fetching your avatar details...");
       await new Promise(resolve => setTimeout(resolve, 1500));
 
-      const userAvatar = await AvatarUtils.getUserAvatar(this.suiClient, this.account);
+      const userAvatar = await AvatarUtils.getUserAvatar(this.echoClient, this.account);
       loadingText.setText(`You got Avatar #${userAvatar.avatarId}!`);
       statusText.setText("Entering the village...");
       await new Promise(resolve => setTimeout(resolve, 1500));
 
       this.scene.start("MenuScene", {
-        suiClient: this.suiClient,
+        echoClient: this.echoClient,
         account: this.account,
         userAvatar: userAvatar,
       });

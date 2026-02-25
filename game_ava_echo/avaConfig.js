@@ -6,19 +6,23 @@ import { API_BASE_URL } from "./api";
 export const AVALANCHE_L1_RPC = import.meta.env?.VITE_AVALANCHE_RPC_URL || "https://subnets.avax.network/myechochain/testnet/rpc";
 export const CHAIN_ID = parseInt(import.meta.env?.VITE_CHAIN_ID || "9000");
 
-export const ECHO_CONTRACT_ADDRESS = import.meta.env?.VITE_ECHO_CONTRACT_ADDRESS || "0x_ECHO_CONTRACT_PLACEHOLDER";
+// Move Package/Module Config
+export const PACKAGE_ID = import.meta.env?.VITE_ECHO_CONTRACT_ADDRESS || "0x_ECHO_CONTRACT_PLACEHOLDER";
+export const MODULE_NAME = "contracts";
+
+// Object IDs (Registry and System objects)
+export const AVATAR_REGISTRY_OBJECT_ID = import.meta.env?.VITE_AVATAR_REGISTRY_ID || "0x_AVATAR_REGISTRY_PLACEHOLDER";
+export const RANDOM_OBJECT_ID = "0x8"; // Standard system random object for Move
+export const REWARD_POOL_OBJECT_ID = import.meta.env?.VITE_REWARD_POOL_ID || "0x_REWARD_POOL_PLACEHOLDER";
+export const CLOCK_OBJECT_ID = "0x6"; // Standard clock object
+
 export const TELEPORTER_MESSENGER_ADDRESS = import.meta.env?.VITE_TELEPORTER_MESSENGER_ADDRESS || "0x253b2783c004018253b2783c004018253b2783c0";
-
-// ---------- ON-CHAIN OBJECT IDs (Avalanche Move / EVM) ----------
-
-export const SCORES_RECORD_ID = import.meta.env?.VITE_SCORES_RECORD_ID || "0x_SCORES_PLACEHOLDER";
-export const ITEM_REGISTRY_ID = import.meta.env?.VITE_ITEM_REGISTRY_ID || "0x_ITEM_REGISTRY_PLACEHOLDER";
 
 export const BACKEND_API_URL = API_BASE_URL;
 
 /**
- * Helper to format item type for Avalanche Move/EVM
+ * Helper to format item type for Avalanche Move
  */
-export function itemStructType(contractAddress = ECHO_CONTRACT_ADDRESS, structName = "ItemNFT") {
-  return `${contractAddress}::${structName}`;
+export function itemNftStructType(contractAddress = PACKAGE_ID, structName = "ItemNFT") {
+  return `${contractAddress}::${MODULE_NAME}::${structName}`;
 }

@@ -23,7 +23,7 @@ export class HomeScene extends Phaser.Scene {
     this.resetTimer = null;
     this.initialPlayerPos = { x: 1.3, y: 5 };
     this.resetFeedbackText = null;
-    this.suiClient = null;
+    this.echoClient = null;
     this.account = null;
     this.userAvatar = null;
     this.playerInventory = new Set();
@@ -42,7 +42,7 @@ export class HomeScene extends Phaser.Scene {
 
 
     }
-    this.suiClient = data ? data.suiClient : null;
+    this.echoClient = data ? data.echoClient : null;
     this.account = data ? data.account : null;
     this.userAvatar = data ? data.userAvatar : null; // Receive avatar data
     this.difficulty = data ? data.difficulty || "Easy" : "Easy";
@@ -337,7 +337,7 @@ export class HomeScene extends Phaser.Scene {
       }
 
       // Update inventory from blockchain (existing code)
-      if (this.account && this.suiClient) {
+      if (this.account && this.echoClient) {
         await this.updateInventory();
       }
 
@@ -351,7 +351,7 @@ export class HomeScene extends Phaser.Scene {
       if (!this.scene.isActive('UIScene')) {
         this.scene.launch('UIScene', {
           account: this.account,
-          suiClient: this.suiClient,
+          echoClient: this.echoClient,
           inaccessibleLocations: this.gameData.inaccessible_locations,
           difficulty: this.difficulty,
           gameSessionId: game_id
@@ -1121,7 +1121,7 @@ export class HomeScene extends Phaser.Scene {
         this.scene.pause();
         this.scene.launch('ItemLockScene', {
           villager: this.nearbyVillager,
-          suiClient: this.suiClient,
+          echoClient: this.echoClient,
           account: this.account,
           gameData: this.gameData,
           playerInventory: this.playerInventory
@@ -1290,7 +1290,7 @@ export class HomeScene extends Phaser.Scene {
   }
 
   async mintItem(itemName) {
-    if (!this.suiClient || !this.account) {
+    if (!this.echoClient || !this.account) {
       console.error("Wallet not connected, cannot mint.");
       return;
     }
@@ -1340,11 +1340,11 @@ export class HomeScene extends Phaser.Scene {
   }
 
   async updateInventory() {
-    if (!this.suiClient || !this.account) return;
+    if (!this.echoClient || !this.account) return;
 
     try {
       const itemNftType = itemNftStructType();
-      const objects = await this.suiClient.getOwnedObjects({
+      const objects = await this.echoClient.getOwnedObjects({
         owner: this.account,
         filter: { StructType: itemNftType },
         options: { showContent: true },

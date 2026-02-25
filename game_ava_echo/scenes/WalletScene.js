@@ -2,12 +2,12 @@ import Phaser from "phaser";
 import { SuiClient } from '@mysten/sui/client';
 import { Transaction } from '@mysten/sui/transactions';
 import { pingServer } from "../api";
-import { PACKAGE_ID, MODULE_NAME, SCORES_RECORD_ID } from "../avaConfig";
+import { PACKAGE_ID, MODULE_NAME, SCORES_RECORD_ID, AVALANCHE_L1_RPC } from "../avaConfig";
 export class WalletScene extends Phaser.Scene {
   constructor() {
     super({ key: "WalletScene" });
     this.userAddress = null;
-    this.suiClient = null;
+    this.echoClient = null;
   }
 
   preload() {
@@ -23,8 +23,7 @@ export class WalletScene extends Phaser.Scene {
   }
 
   create() {
-    const AVALANCHE_L1_RPC = 'https://subnets.avax.network/myechochain/testnet/rpc'; // Placeholder
-    this.suiClient = new SuiClient({ url: AVALANCHE_L1_RPC });
+    this.echoClient = new SuiClient({ url: AVALANCHE_L1_RPC });
 
     const framePadding = 20;
     const frameWidth = this.cameras.main.width - framePadding * 2;
@@ -127,7 +126,7 @@ export class WalletScene extends Phaser.Scene {
     googleBtn.add([gBg, gText]);
     googleBtn.setSize(280, 50).setInteractive({ useHandCursor: true });
 
-    googleBtn.on('pointerdown', () => this.simulateSocialLogin());
+    googleBtn.on('pointerdown', () => this.initiateSocialLogin());
 
     this.createButton(
       centerX,
@@ -315,7 +314,7 @@ export class WalletScene extends Phaser.Scene {
     }
   }
 
-  async simulateSocialLogin() {
+  async initiateSocialLogin() {
     console.log("Initiating Real Account Abstraction (Sponsored) flow...");
     const loadingText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY + 200, "Sponsoring transaction for your social account...", {
       fontSize: '18px', color: '#d4af37'
@@ -401,7 +400,7 @@ export class WalletScene extends Phaser.Scene {
         arguments: [tx.object(SCORES_RECORD_ID)],
       });
 
-      const result = await this.suiClient.devInspectTransactionBlock({
+      const result = await this.echoClient.devInspectTransactionBlock({
         sender: this.userAddress,
         transactionBlock: tx,
       });
@@ -441,7 +440,7 @@ export class WalletScene extends Phaser.Scene {
   proceedToGame() {
     this.scene.start('AvatarScene', {
       account: this.userAddress,
-      suiClient: this.suiClient
+      echoClient: this.echoClient
     });
   }
 }

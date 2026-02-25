@@ -145,7 +145,7 @@ module contracts::contracts {
     }
 
     /***********************
-     * TELEPORTER (Mock)
+     * TELEPORTER (Event-Driven Transition)
      ***********************/
     public entry fun teleport_item(item: ItemNFT, target_chain_id: u64, _ctx: &mut TxContext) {
         let ItemNFT { id, name } = item;

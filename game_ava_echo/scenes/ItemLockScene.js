@@ -7,7 +7,7 @@ export class ItemLockScene extends Phaser.Scene {
     constructor() {
         super({ key: "ItemLockScene" });
         this.villager = null;
-        this.suiClient = null;
+        this.echoClient = null;
         this.account = null;
         this.gameData = null;
         this.statusText = null;
@@ -16,7 +16,7 @@ export class ItemLockScene extends Phaser.Scene {
 
     init(data) {
         this.villager = data.villager;
-        this.suiClient = data.suiClient;
+        this.echoClient = data.echoClient;
         this.account = data.account;
         this.gameData = data.gameData;
         this.playerInventory = data.playerInventory; // Get inventory from HomeScene
@@ -66,7 +66,7 @@ export class ItemLockScene extends Phaser.Scene {
     }
 
     async tradeAndBurnItem() {
-        if (!this.suiClient || !this.account) {
+        if (!this.echoClient || !this.account) {
             this.statusText.setText("Wallet is not connected.");
             return;
         }
@@ -75,7 +75,7 @@ export class ItemLockScene extends Phaser.Scene {
 
         try {
             const itemNftType = itemStructType();
-            const objects = await this.suiClient.getOwnedObjects({
+            const objects = await this.echoClient.getOwnedObjects({
                 owner: this.account,
                 filter: { StructType: itemNftType },
                 options: { showContent: true },

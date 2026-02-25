@@ -2,14 +2,14 @@ import { Transaction } from '@mysten/sui/transactions';
 import { PACKAGE_ID, MODULE_NAME } from "../avaConfig.js";
 
 export class AvatarUtils {
-  static async getUserAvatar(suiClient, account) {
-    if (!suiClient || !account) {
+  static async getUserAvatar(echoClient, account) {
+    if (!echoClient || !account) {
       throw new Error("Wallet not connected");
     }
 
     try {
       const avatarNFTType = `${PACKAGE_ID}::${MODULE_NAME}::AvatarNFT`;
-      const userAvatars = await suiClient.getOwnedObjects({
+      const userAvatars = await echoClient.getOwnedObjects({
         owner: account,
         filter: { StructType: avatarNFTType },
         options: { showContent: true },

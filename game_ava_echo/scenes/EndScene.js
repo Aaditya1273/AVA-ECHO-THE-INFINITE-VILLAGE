@@ -15,7 +15,7 @@ export class EndScene extends Phaser.Scene {
         this.proofObjectId = null;
         this.isProcessing = false;
         this.claimButton = null;
-        this.suiClient = null;
+        this.echoClient = null;
     }
 
     init(data) {
@@ -24,7 +24,7 @@ export class EndScene extends Phaser.Scene {
         this.gameScore = data?.score || 0;
         this.gameWon = data?.isCorrect || false;
         this.isTrueEnding = data?.isTrueEnding || false;
-        this.suiClient = data?.suiClient || null;
+        this.echoClient = data?.echoClient || null;
     }
 
     create() {
@@ -201,12 +201,12 @@ export class EndScene extends Phaser.Scene {
             }
 
             // Method 2: If objectChanges didn't work, try to fetch from transaction details
-            if (!this.proofObjectId && result.digest && this.suiClient) {
+            if (!this.proofObjectId && result.digest && this.echoClient) {
                 console.log("Fetching transaction details for digest:", result.digest);
                 await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for indexing
 
                 try {
-                    const txDetails = await this.suiClient.getTransactionBlock({
+                    const txDetails = await this.echoClient.getTransactionBlock({
                         digest: result.digest,
                         options: { showObjectChanges: true, showEffects: true }
                     });
@@ -240,13 +240,13 @@ export class EndScene extends Phaser.Scene {
             }
 
             // Method 4: Query owned objects to find the proof
-            if (!this.proofObjectId && this.suiClient && account) {
+            if (!this.proofObjectId && this.echoClient && account) {
                 console.log("Searching for proof in owned objects...");
                 await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for indexing
 
                 try {
                     const proofType = `${PACKAGE_ID}::${MODULE_NAME}::GameCompletionProof`;
-                    const ownedObjects = await this.suiClient.getOwnedObjects({
+                    const ownedObjects = await this.echoClient.getOwnedObjects({
                         owner: account,
                         filter: { StructType: proofType },
                         options: { showContent: true }

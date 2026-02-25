@@ -6,7 +6,7 @@ import { PACKAGE_ID, MODULE_NAME, CHEST_REGISTRY_ID, REWARD_POOL_OBJECT_ID, CLOC
 export class MenuScene extends Phaser.Scene {
   constructor() {
     super({ key: "MenuScene" });
-    this.suiClient = null;
+    this.echoClient = null;
     this.account = null;
     this.userAvatar = null;
     this.chestCooldownRemaining = 0;
@@ -21,7 +21,7 @@ export class MenuScene extends Phaser.Scene {
   }
 
   init(data) {
-    this.suiClient = data?.suiClient;
+    this.echoClient = data?.echoClient;
     this.account = data?.account;
   }
 
@@ -43,11 +43,11 @@ export class MenuScene extends Phaser.Scene {
 
     // Fetch user's avatar
     try {
-      this.userAvatar = await AvatarUtils.getUserAvatar(this.suiClient, this.account);
+      this.userAvatar = await AvatarUtils.getUserAvatar(this.echoClient, this.account);
       if (!this.userAvatar) {
         console.error("User has no avatar");
         this.scene.start("AvatarScene", {
-          suiClient: this.suiClient,
+          echoClient: this.echoClient,
           account: this.account,
         });
         return;
@@ -136,7 +136,7 @@ export class MenuScene extends Phaser.Scene {
   }
 
   async fetchChestStatus() {
-    if (!this.suiClient || !this.account || !CHEST_REGISTRY_ID) {
+    if (!this.echoClient || !this.account || !CHEST_REGISTRY_ID) {
       console.log("Chest system not available");
       this.chestCooldownRemaining = 0;
       return;
@@ -155,7 +155,7 @@ export class MenuScene extends Phaser.Scene {
       });
 
       console.log("Fetching chest status...");
-      const result = await this.suiClient.devInspectTransactionBlock({
+      const result = await this.echoClient.devInspectTransactionBlock({
         sender: this.account,
         transactionBlock: tx,
       });
@@ -253,7 +253,7 @@ export class MenuScene extends Phaser.Scene {
   }
 
   async openChest() {
-    if (!this.suiClient || !this.account || !CHEST_REGISTRY_ID) {
+    if (!this.echoClient || !this.account || !CHEST_REGISTRY_ID) {
       console.error("Wallet not connected or chest registry not available");
       return;
     }
@@ -453,7 +453,7 @@ export class MenuScene extends Phaser.Scene {
       // Wait a bit for the transaction to be processed
       await new Promise(resolve => setTimeout(resolve, 3000));
 
-      const txDetails = await this.suiClient.getTransactionBlock({
+      const txDetails = await this.echoClient.getTransactionBlock({
         digest: digest,
         options: {
           showEffects: true,
@@ -510,7 +510,7 @@ export class MenuScene extends Phaser.Scene {
       // Add a longer delay to ensure the object is available on-chain
       await new Promise(resolve => setTimeout(resolve, 4000));
 
-      const objectDetails = await this.suiClient.getObject({
+      const objectDetails = await this.echoClient.getObject({
         id: objectId,
         options: {
           showContent: true,
@@ -606,7 +606,7 @@ export class MenuScene extends Phaser.Scene {
       console.log("Trying alternative approach: finding recent ItemNFT for user");
 
       const itemNftType = `${PACKAGE_ID}::${MODULE_NAME}::ItemNFT`;
-      const objects = await this.suiClient.getOwnedObjects({
+      const objects = await this.echoClient.getOwnedObjects({
         owner: this.account,
         filter: { StructType: itemNftType },
         options: {
